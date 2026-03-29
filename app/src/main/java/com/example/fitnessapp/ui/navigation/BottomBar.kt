@@ -15,6 +15,7 @@ fun BottomBar(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
+
         bottomNavItems.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
@@ -24,10 +25,12 @@ fun BottomBar(navController: NavController) {
                         launchSingleTop = true
                         restoreState = true
                     }
+
                 },
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) }
             )
         }
+
     }
 }
