@@ -20,7 +20,7 @@ import com.example.fitnessapp.data.local.entity.WorkoutSession
 @TypeConverters(RouteConverters::class)   // convert from/to json
 abstract class AppDatabase : RoomDatabase() {
     abstract val userAccountDao: UserAccountDao
-    abstract val workoutDao: WorkoutSessionDao
+    abstract val workoutSessionDao: WorkoutSessionDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
