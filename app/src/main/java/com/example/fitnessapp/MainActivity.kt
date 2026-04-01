@@ -11,7 +11,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FitnessAppTheme {
-                AppNavigation()
+                // container
+                val container = (application as FitnessApplication).container
+                AppNavigation(container)
             }
         }
     }
