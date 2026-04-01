@@ -13,8 +13,12 @@ interface UserAccountDao {
     suspend fun insertUserAccount(user: UserAccount): Long  // add or update a user
 
     @Query("DELETE FROM user_accounts WHERE id = :id")
-    suspend fun deleteUserAccount(id: Int)   // delete a user by id
+    suspend fun deleteUserAccount(id: String)   // delete a user by id
 
     @Query("SELECT * FROM user_accounts WHERE id = :id")
-    fun getUserAccount(id: Int): Flow<UserAccount?>
+    suspend fun getUserAccount(id: String): UserAccount?
+
+    @Query("SELECT * FROM user_accounts WHERE username = :username AND password = :password LIMIT 1")
+    suspend fun login(username: String, password: String): UserAccount?
+
 }
