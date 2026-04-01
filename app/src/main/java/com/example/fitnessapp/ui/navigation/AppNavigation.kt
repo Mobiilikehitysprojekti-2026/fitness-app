@@ -11,6 +11,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ import com.example.fitnessapp.ui.screens.SettingsScreen
 import com.example.fitnessapp.ui.screens.SignupScreen
 import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutsScreen
+import com.example.fitnessapp.viewmodel.AuthViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
@@ -36,6 +39,7 @@ fun AppNavigation(container: AppContainer) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+
     // view models
     // sampleWorkout viewmodel (for testing)
     val sampleWorkoutViewModel = remember {
@@ -44,6 +48,15 @@ fun AppNavigation(container: AppContainer) {
             container.workoutSessionRepository
         )
     }
+    // authViewModel
+    val authViewModel = remember {
+        AuthViewModel(
+            container.userAccountRepository
+        )
+    }
+
+    // userAccount
+    val userAccount by container.userAccountRepository.currentUserAccount.collectAsState()
 
     val screenTitle = when (currentRoute) {
         ROUTE_HOME         -> "Home"
@@ -82,14 +95,14 @@ fun AppNavigation(container: AppContainer) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = ROUTE_HOME,
+            startDestination = if (userAccount == null) ROUTE_LOGIN else ROUTE_HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(ROUTE_HOME)         { HomeScreen(navController, sampleWorkoutViewModel) }
-            composable(ROUTE_LOGIN)        { LoginScreen(navController) }
+            composable(ROUTE_LOGIN)        { LoginScreen(navController, authViewModel) }
             composable(ROUTE_PROFILE)      { ProfileScreen(navController) }
             composable(ROUTE_SETTINGS)     { SettingsScreen(navController) }
-            composable(ROUTE_SIGNUP)       { SignupScreen(navController) }
+            composable(ROUTE_SIGNUP)       { SignupScreen(navController, authViewModel) }
             composable(ROUTE_WORKOUT_DATA) { WorkoutDataScreen(navController) }
             composable(ROUTE_WORKOUTS)     { WorkoutsScreen(navController) }
         }

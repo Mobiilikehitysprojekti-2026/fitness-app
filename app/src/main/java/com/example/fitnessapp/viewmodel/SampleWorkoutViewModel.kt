@@ -1,5 +1,6 @@
 package com.example.fitnessapp.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,9 +10,12 @@ import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.data.model.WorkoutType
 import com.example.fitnessapp.data.repository.UserAccountRepository
 import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 
@@ -24,11 +28,8 @@ class SampleWorkoutViewModel(
     private val userAccountRepository: UserAccountRepository,
     private val workoutSessionRepository: WorkoutSessionRepository
 ): ViewModel() {
-    //val db = AppDatabase.getDatabase(application)
-
     // current user account
-    private val _currentUserAccount = MutableStateFlow<UserAccount?>(null)
-    val currentUserAccount: StateFlow<UserAccount?> = _currentUserAccount.asStateFlow()
+    val currentUserAccount: StateFlow<UserAccount?> = userAccountRepository.currentUserAccount
 
     // current session
     private val _currentSession = MutableStateFlow<WorkoutSession?>(null)
@@ -41,37 +42,55 @@ class SampleWorkoutViewModel(
 
 
     init {
-        loadUserAccountFromDB()
+        loadUser()
+        //loadUserAccountFromDB()
         loadAllWorkoutsFromDB()
     }
 
-    fun addWorkoutToDB() {
-        val session: WorkoutSession = WorkoutSession(type = WorkoutType.WALKING, routePoints = routePoints)
-        _currentSession.value = session
-
+    // load DataSTore
+    private fun loadUser() {
         viewModelScope.launch {
-            _currentSession.value?.let { session ->
-                //db.workoutDao.insertWorkoutSession(session)
-                workoutSessionRepository.insertWorkoutSession(session)
+            try {
+                userAccountRepository.loadSavedUserAccount()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+    fun addWorkoutToDB() {
+        val userId = currentUserAccount.value?.id
+
+        if (userId != null) {
+            val session: WorkoutSession = WorkoutSession(type = WorkoutType.WALKING, userId = userId, routePoints = routePoints)
+            _currentSession.value = session
+
+            viewModelScope.launch {
+                _currentSession.value?.let { session ->
+                    workoutSessionRepository.insertWorkoutSession(session)
+                }
             }
         }
     }
 
 
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun loadAllWorkoutsFromDB() {
         viewModelScope.launch {
-            /*
-            db.workoutDao.getAllWorkoutSessions().collect { sessions ->
-                _allSessions.value = sessions
-            }
-
-             */
-
-            workoutSessionRepository.allWorkoutSessions.collect { sessions ->
-                _allSessions.value = sessions
-            }
-
+            currentUserAccount
+                .flatMapLatest { user ->
+                    if (user != null) {
+                        workoutSessionRepository.getAllWorkoutSessionsOfUser(user.id)
+                    } else {
+                        // reset when user is logged out
+                        flowOf(emptyList())
+                    }
+                }
+                .collect { sessions ->
+                    _allSessions.value = sessions
+                }
         }
     }
 
@@ -80,6 +99,7 @@ class SampleWorkoutViewModel(
     fun addUserAccountToDB() {
         val newUser: UserAccount = UserAccount(
             username = "test",
+            password = "test",
             name = "Test Testi",
             age = 29,
             height = 175,
@@ -87,10 +107,19 @@ class SampleWorkoutViewModel(
         )
         viewModelScope.launch {
             userAccountRepository.insertUserAccount(newUser)
+            userAccountRepository.setCurrentUserAccount(newUser.id)
         }
 
     }
 
+    // logout
+    fun logout(){
+        viewModelScope.launch {
+            userAccountRepository.logout()
+        }
+    }
+
+    /*
     fun loadUserAccountFromDB() {
         viewModelScope.launch {
             userAccountRepository.currentUserAccount.collect { userAccount ->
@@ -98,5 +127,7 @@ class SampleWorkoutViewModel(
             }
         }
     }
+
+     */
 
 }
