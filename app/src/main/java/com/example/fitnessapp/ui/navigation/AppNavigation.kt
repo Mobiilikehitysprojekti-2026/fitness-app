@@ -51,7 +51,8 @@ fun AppNavigation(container: AppContainer) {
     val sampleWorkoutViewModel = remember {
         SampleWorkoutViewModel(
             container.userAccountRepository,
-            container.workoutSessionRepository
+            container.workoutSessionRepository,
+            container.locationManager
         )
     }
     // authViewModel
