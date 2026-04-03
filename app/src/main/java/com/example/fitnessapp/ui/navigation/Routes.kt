@@ -13,3 +13,11 @@ const val ROUTE_SIGNUP = "signup"
 const val ROUTE_WORKOUT_DATA = "workout_data"
 
 const val ROUTE_WORKOUTS = "workouts"
+
+const val ROUTE_RUNNING_WORKOUT = "running_workout"
+
+const val ROUTE_CYCLING_WORKOUT = "cycling_workout"
+
+const val ROUTE_WALKING_WORKOUT = "walking_workout"
+
+const val ROUTE_WORKOUT_DETAIL = "workout_detail"
