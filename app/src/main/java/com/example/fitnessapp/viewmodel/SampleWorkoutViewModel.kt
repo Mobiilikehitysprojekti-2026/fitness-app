@@ -1,5 +1,6 @@
 package com.example.fitnessapp.viewmodel
 
+import android.location.Location
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.data.model.WorkoutType
 import com.example.fitnessapp.data.repository.UserAccountRepository
 import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import com.example.fitnessapp.managers.LocationManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +28,8 @@ import kotlinx.coroutines.launch
 * */
 class SampleWorkoutViewModel(
     private val userAccountRepository: UserAccountRepository,
-    private val workoutSessionRepository: WorkoutSessionRepository
+    private val workoutSessionRepository: WorkoutSessionRepository,
+    private val locationManager: LocationManager
 ): ViewModel() {
     // current user account
     val currentUserAccount: StateFlow<UserAccount?> = userAccountRepository.currentUserAccount
@@ -38,7 +41,12 @@ class SampleWorkoutViewModel(
     private val _allSessions = MutableStateFlow<List<WorkoutSession>>(emptyList())
     val allSessions: StateFlow<List<WorkoutSession>> = _allSessions.asStateFlow()
     // sample route
-    val routePoints: List<Coordinates> = listOf(Coordinates(40.7580, -73.9855), Coordinates(40.7739, -73.9709))
+    //val routePoints: List<Coordinates> = listOf(Coordinates(40.7580, -73.9855), Coordinates(40.7739, -73.9709))
+
+
+    // location and route
+    val routePoints: StateFlow<List<Coordinates>> = locationManager.routePoints
+    val currentLocation: StateFlow<Location?> = locationManager.currentLocation
 
 
     init {
@@ -63,7 +71,7 @@ class SampleWorkoutViewModel(
         val userId = currentUserAccount.value?.id
 
         if (userId != null) {
-            val session: WorkoutSession = WorkoutSession(type = WorkoutType.WALKING, userId = userId, routePoints = routePoints)
+            val session: WorkoutSession = WorkoutSession(type = WorkoutType.WALKING, userId = userId, routePoints = routePoints.value)
             _currentSession.value = session
 
             viewModelScope.launch {
@@ -129,5 +137,11 @@ class SampleWorkoutViewModel(
     }
 
      */
+
+
+    // functions for location
+    fun startTracking() = locationManager.startTracking()
+    fun stopTracking() = locationManager.stopTracking()
+    fun resetRoute() = locationManager.resetRoute()
 
 }

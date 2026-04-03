@@ -1,9 +1,11 @@
 package com.example.fitnessapp.di
 
 import android.content.Context
+import android.location.Location
 import com.example.fitnessapp.data.local.AppDatabase
 import com.example.fitnessapp.data.repository.UserAccountRepository
 import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import com.example.fitnessapp.managers.LocationManager
 import com.example.fitnessapp.managers.UserPreferencesManager
 
 /*
@@ -17,7 +19,7 @@ class AppContainer(context: Context) {
     // DataStore
     val userPreferencesManager = UserPreferencesManager(context)
     // managers (services)
-
+    val locationManager = LocationManager(context)
 
     // repositories
     val userAccountRepository = UserAccountRepository(database.userAccountDao, userPreferencesManager)

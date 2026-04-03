@@ -13,6 +13,8 @@ room = "2.6.1"
 ksp = "2.0.21-1.0.28"
 # Serialization
 kotlinxSerializationJson = "1.8.0"
+# accpmpanist permissions
+accompanistPermissions = "0.34.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +37,8 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 # Json Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+# Accompanist Permissions
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Internet access permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- GPS-location permission -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Network-location permission -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:name=".FitnessApplication"
         android:allowBackup="true"
