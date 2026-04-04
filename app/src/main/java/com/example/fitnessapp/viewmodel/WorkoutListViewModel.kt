@@ -1,35 +1,36 @@
-package com.example.fitnessapp.model
+package com.example.fitnessapp.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.ViewModel
+import com.example.fitnessapp.repository.UserAccountRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 data class CompletedWorkout(
-
     val id: Int,
-    val type: String,           // "Running", "Cycling", "Walking"
+    val type: String,
     val durationSeconds: Int,
-    val distanceKm: Double,     // currently mock speed * time; will be replaced with something else
-
+    val distanceKm: Double,
     val date: String,
-    val steps: Int = 0,         // for running/walking
-    val avgPowerW: Int = 0      // for cycling
+    val steps: Int = 0,
+    val avgPowerW: Int = 0
 )
 
-object WorkoutRepository {
+class WorkoutListViewModel(
+    val userAccountRepository: UserAccountRepository
+) : ViewModel() {
+
     val workouts = mutableStateListOf<CompletedWorkout>()
     private var nextId = 1
 
     fun addWorkout(
-
         type: String,
         durationSeconds: Int,
         distanceKm: Double,
         steps: Int = 0,
         avgPowerW: Int = 0
     ) {
-
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
         workouts.add(
             0,
@@ -42,10 +43,8 @@ object WorkoutRepository {
                 steps = steps,
                 avgPowerW = avgPowerW
             )
-
         )
     }
-
 
     fun getById(id: Int): CompletedWorkout? = workouts.find { it.id == id }
 }

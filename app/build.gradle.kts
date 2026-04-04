@@ -43,9 +43,9 @@ android {
 
 dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.7")
-    implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

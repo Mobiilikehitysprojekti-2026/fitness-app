@@ -1,12 +1,11 @@
-package com.example.fitnessapp.ui.screens
+package com.example.fitnessapp.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fitnessapp.data.UserPreferencesRepository
+import com.example.fitnessapp.repository.UserAccountRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,26 +31,23 @@ data class ProfileUiState(
         }
 }
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+class ProfileViewModel(
+    val userAccountRepository: UserAccountRepository
+) : ViewModel() {
 
-    private val repo = UserPreferencesRepository(application)
-
-    val uiState: StateFlow<ProfileUiState> = combine(
-        repo.heightFlow,
-        repo.weightFlow
-    ) { height, weight ->
-        ProfileUiState(height = height, weight = weight)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = userAccountRepository.userAccount
+        .map { account -> ProfileUiState(height = account.height, weight = account.weight) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
 
     fun saveHeight(value: String) {
         value.toFloatOrNull()?.let {
-            viewModelScope.launch { repo.saveHeight(it) }
+            viewModelScope.launch { userAccountRepository.saveHeight(it) }
         }
     }
 
     fun saveWeight(value: String) {
         value.toFloatOrNull()?.let {
-            viewModelScope.launch { repo.saveWeight(it) }
+            viewModelScope.launch { userAccountRepository.saveWeight(it) }
         }
     }
 }
