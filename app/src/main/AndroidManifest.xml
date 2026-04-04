@@ -4,10 +4,14 @@
 
     <!-- Internet access permission -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Step counter permission -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- GPS-location permission -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Network-location permission -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
 
     <application
         android:name=".FitnessApplication"
