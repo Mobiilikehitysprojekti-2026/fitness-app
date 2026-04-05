@@ -24,11 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.fitnessapp.model.WorkoutRepository
+import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun WalkingWorkoutScreen(navController: NavController) {
+fun WalkingWorkoutScreen(
+    navController: NavController,
+    viewModel: WorkoutDataViewModel
+) {
     var isRunning by remember { mutableStateOf(false) }
     var seconds by remember { mutableStateOf(0) }
 
@@ -140,7 +143,7 @@ fun WalkingWorkoutScreen(navController: NavController) {
         if (!isRunning && seconds > 0) {
             Button(
                 onClick = {
-                    WorkoutRepository.addWorkout(
+                    viewModel.saveWorkout(
                         type = "Walking",
                         durationSeconds = seconds,
                         distanceKm = distanceKm,

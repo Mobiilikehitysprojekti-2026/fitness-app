@@ -1,4 +1,4 @@
-package com.example.fitnessapp.data
+package com.example.fitnessapp.model
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -16,8 +16,9 @@ class UserPreferencesRepository(private val context: Context) {
     private val HEIGHT_KEY = floatPreferencesKey("height_cm")
     private val WEIGHT_KEY = floatPreferencesKey("weight_kg")
 
-    val heightFlow: Flow<Float?> = context.dataStore.data.map { it[HEIGHT_KEY] }
-    val weightFlow: Flow<Float?> = context.dataStore.data.map { it[WEIGHT_KEY] }
+
+    val heightFlow: Flow<Float> = context.dataStore.data.map { it[HEIGHT_KEY] ?: 175f }
+    val weightFlow: Flow<Float> = context.dataStore.data.map { it[WEIGHT_KEY] ?: 75f }
 
     suspend fun saveHeight(value: Float) {
         context.dataStore.edit { it[HEIGHT_KEY] = value }

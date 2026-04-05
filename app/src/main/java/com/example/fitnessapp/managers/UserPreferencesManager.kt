@@ -3,16 +3,13 @@ package com.example.fitnessapp.managers
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import com.example.fitnessapp.model.dataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
  * This class reads/writes the userId to storage
  */
-// DataStore initialization
-private val Context.dataStore by preferencesDataStore(name = "user_prefs")
-
 class UserPreferencesManager(private val context: Context) {
     companion object {
         private val USER_ID = stringPreferencesKey("user_id")

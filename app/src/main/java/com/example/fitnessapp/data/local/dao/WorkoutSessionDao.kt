@@ -13,11 +13,13 @@ interface WorkoutSessionDao {
     suspend fun insertWorkoutSession(workoutSession: WorkoutSession): Long
 
     @Query("DELETE FROM workout_sessions WHERE id = :id")
-    suspend fun deleteWorkoutSession(id: String)   // delete a workoutSession by id (changed to String as per entity)
+    suspend fun deleteWorkoutSession(id: String)
 
     @Query("SELECT * FROM workout_sessions WHERE userId = :userId")
     fun getAllWorkoutSessionsOfUser(userId: String): Flow<List<WorkoutSession>>
 
+    @Query("SELECT * FROM workout_sessions WHERE id = :id")
+    suspend fun getWorkoutSessionById(id: String): WorkoutSession?
 
     @Query("DELETE FROM workout_sessions WHERE userId = :userId")
     suspend fun deleteWorkoutSessionsOfUser(userId: String)

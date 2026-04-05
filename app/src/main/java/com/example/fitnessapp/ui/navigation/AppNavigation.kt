@@ -35,7 +35,9 @@ import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
 import com.example.fitnessapp.ui.screens.WorkoutsScreen
 import com.example.fitnessapp.viewmodel.AuthViewModel
+import com.example.fitnessapp.viewmodel.ProfileViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
+import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +61,21 @@ fun AppNavigation(container: AppContainer) {
     val authViewModel = remember {
         AuthViewModel(
             container.userAccountRepository
+        )
+    }
+
+    // profileViewModel
+    val profileViewModel = remember {
+        ProfileViewModel(
+            container.userAccountRepository
+        )
+    }
+
+    // workoutDataViewModel
+    val workoutDataViewModel = remember {
+        WorkoutDataViewModel(
+            container.userAccountRepository,
+            container.workoutSessionRepository
         )
     }
 
@@ -115,26 +132,35 @@ fun AppNavigation(container: AppContainer) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (userAccount == null) ROUTE_LOGIN else ROUTE_HOME,
+            startDestination = ROUTE_LOGIN,
             modifier = Modifier.padding(innerPadding)
         ) {
 
-            composable(ROUTE_HOME)             { HomeScreen(navController) }
+            composable(ROUTE_HOME)             { HomeScreen(navController, workoutDataViewModel) }
             composable(ROUTE_LOGIN)            { LoginScreen(navController, authViewModel) }
-            composable(ROUTE_PROFILE)          { ProfileScreen(navController) }
+            composable(ROUTE_PROFILE)          { ProfileScreen(navController, profileViewModel) }
             composable(ROUTE_SETTINGS)         { SettingsScreen(navController) }
             composable(ROUTE_SIGNUP)           { SignupScreen(navController, authViewModel) }
-            composable(ROUTE_WORKOUT_DATA)     { WorkoutDataScreen(navController) }
+            composable(ROUTE_WORKOUT_DATA)     { WorkoutDataScreen(navController, workoutDataViewModel) }
             composable(ROUTE_WORKOUTS)         { WorkoutsScreen(navController) }
-            composable(ROUTE_RUNNING_WORKOUT)  { RunningWorkoutScreen(navController) }
-            composable(ROUTE_CYCLING_WORKOUT)  { CyclingWorkoutScreen(navController) }
-            composable(ROUTE_WALKING_WORKOUT)  { WalkingWorkoutScreen(navController) }
+            composable(ROUTE_RUNNING_WORKOUT)  { RunningWorkoutScreen(navController, workoutDataViewModel) }
+            composable(ROUTE_CYCLING_WORKOUT)  { CyclingWorkoutScreen(navController, workoutDataViewModel) }
+            composable(ROUTE_WALKING_WORKOUT)  { WalkingWorkoutScreen(navController, workoutDataViewModel) }
             composable(
                 route = "$ROUTE_WORKOUT_DETAIL/{workoutId}",
-                arguments = listOf(navArgument("workoutId") { type = NavType.IntType })
+                arguments = listOf(navArgument("workoutId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val workoutId = backStackEntry.arguments?.getInt("workoutId") ?: -1
-                WorkoutDetailScreen(navController, workoutId)
+                val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
+                WorkoutDetailScreen(navController, workoutId, workoutDataViewModel)
+            }
+        }
+
+        // Handle auto-navigation if user is already logged in
+        LaunchedEffect(userAccount) {
+            if (userAccount != null && currentRoute == ROUTE_LOGIN) {
+                navController.navigate(ROUTE_HOME) {
+                    popUpTo(ROUTE_LOGIN) { inclusive = true }
+                }
             }
         }
 

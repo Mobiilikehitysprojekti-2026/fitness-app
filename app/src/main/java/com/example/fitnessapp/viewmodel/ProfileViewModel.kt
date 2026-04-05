@@ -1,57 +1,59 @@
-package com.example.fitnessapp.ui.screens
+package com.example.fitnessapp.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fitnessapp.data.UserPreferencesRepository
+import com.example.fitnessapp.data.repository.UserAccountRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ProfileUiState(
-    val height: Float? = null,
-    val weight: Float? = null
+    val height: Float = 175f,
+    val weight: Float = 75f
 ) {
-    val bmi: Float?
+    val bmi: Float
         get() {
-            if (height == null || weight == null || height <= 0f) return null
             val h = height / 100f
-            return weight / (h * h)
+            return if (h > 0) weight / (h * h) else 0f
         }
 
-    val bmiCategory: String?
-        get() = bmi?.let {
-            when {
-                it < 18.5f -> "Underweight"
-                it < 25f   -> "Normal"
-                it < 30f   -> "Overweight"
-                else       -> "Obese"
-            }
+    val bmiCategory: String
+        get() = when {
+            bmi < 18.5f -> "Underweight"
+            bmi < 25f   -> "Normal"
+            bmi < 30f   -> "Overweight"
+            else       -> "Obese"
         }
 }
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+class ProfileViewModel(
+    private val userAccountRepository: UserAccountRepository
+) : ViewModel() {
 
-    private val repo = UserPreferencesRepository(application)
-
-    val uiState: StateFlow<ProfileUiState> = combine(
-        repo.heightFlow,
-        repo.weightFlow
-    ) { height, weight ->
-        ProfileUiState(height = height, weight = weight)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = userAccountRepository.currentUserAccount
+        .map { user ->
+            if (user != null) {
+                ProfileUiState(height = user.height.toFloat(), weight = user.weight.toFloat())
+            } else {
+                ProfileUiState()
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
 
     fun saveHeight(value: String) {
-        value.toFloatOrNull()?.let {
-            viewModelScope.launch { repo.saveHeight(it) }
+        value.toFloatOrNull()?.let { height ->
+            viewModelScope.launch {
+                userAccountRepository.updateHeight(height.toInt())
+            }
         }
     }
 
     fun saveWeight(value: String) {
-        value.toFloatOrNull()?.let {
-            viewModelScope.launch { repo.saveWeight(it) }
+        value.toFloatOrNull()?.let { weight ->
+            viewModelScope.launch {
+                userAccountRepository.updateWeight(weight.toInt())
+            }
         }
     }
 }
