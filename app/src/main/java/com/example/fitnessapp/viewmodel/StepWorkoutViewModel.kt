@@ -11,7 +11,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class WalkingWorkoutViewModel(
+class StepWorkoutViewModel(
     val userAccountRepository: UserAccountRepository
 ) : ViewModel() {
 
