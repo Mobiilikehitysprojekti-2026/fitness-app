@@ -22,14 +22,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.fitnessapp.viewmodel.WalkingWorkoutViewModel
+import com.example.fitnessapp.viewmodel.StepWorkoutViewModel
 import com.example.fitnessapp.viewmodel.WorkoutListViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun WalkingWorkoutScreen(
     navController: NavController,
-    viewModel: WalkingWorkoutViewModel,
+    viewModel: StepWorkoutViewModel,
     workoutListViewModel: WorkoutListViewModel
 ) {
     val context = LocalContext.current

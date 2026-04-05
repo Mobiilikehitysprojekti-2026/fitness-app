@@ -35,8 +35,7 @@ import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
 import com.example.fitnessapp.ui.screens.WorkoutsScreen
 import com.example.fitnessapp.viewmodel.CyclingWorkoutViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
-import com.example.fitnessapp.viewmodel.RunningWorkoutViewModel
-import com.example.fitnessapp.viewmodel.WalkingWorkoutViewModel
+import com.example.fitnessapp.viewmodel.StepWorkoutViewModel
 import com.example.fitnessapp.viewmodel.WorkoutListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,8 +49,8 @@ fun AppNavigation(container: AppContainer) {
     // Initialize all ViewModels here
     val profileViewModel = viewModel { ProfileViewModel(UserAccountRepository) }
     val workoutListViewModel = viewModel { WorkoutListViewModel(UserAccountRepository) }
-    val runningWorkoutViewModel = viewModel { RunningWorkoutViewModel(UserAccountRepository) }
-    val walkingWorkoutViewModel = viewModel { WalkingWorkoutViewModel(UserAccountRepository) }
+    val runningWorkoutViewModel = viewModel(key = "running") { StepWorkoutViewModel(UserAccountRepository) }
+    val walkingWorkoutViewModel = viewModel(key = "walking") { StepWorkoutViewModel(UserAccountRepository) }
     val cyclingWorkoutViewModel = viewModel { CyclingWorkoutViewModel(UserAccountRepository) }
     val authViewModel = viewModel { AuthViewModel(container.userAccountRepository) }
 
