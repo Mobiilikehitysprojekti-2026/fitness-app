@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.fitnessapp.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
@@ -27,11 +28,12 @@ fun ProfileScreen(
     val focusManager = LocalFocusManager.current
 
     var heightInput by remember(state.height) {
-        mutableStateOf(state.height?.let { "%.0f".format(it) } ?: "")
+        mutableStateOf("%.0f".format(state.height))
     }
     var weightInput by remember(state.weight) {
-        mutableStateOf(state.weight?.let { "%.0f".format(it) } ?: "")
+        mutableStateOf("%.0f".format(state.weight))
     }
+
 
     Column(
         modifier = Modifier
@@ -39,7 +41,7 @@ fun ProfileScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text("Profile", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text("Profile & BMI Calculator", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -78,9 +80,7 @@ fun ProfileScreen(
                 modifier = Modifier.weight(1f)
             )
 
-            if (state.bmi != null) {
-                BmiChip(bmi = state.bmi!!, category = state.bmiCategory!!)
-            }
+            BmiChip(bmi = state.bmi, category = state.bmiCategory)
         }
 
         Button(
@@ -92,8 +92,14 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Save")
+            Text("Save & Update BMI")
         }
+        
+        Text(
+            text = "Your BMI is calculated automatically using your saved profile data.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

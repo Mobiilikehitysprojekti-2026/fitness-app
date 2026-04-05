@@ -31,6 +31,7 @@ data class WorkoutSession(
     val stepCount: Int = 0,
     val distanceMeters: Float = 0f,
     val routePoints: List<Coordinates>,    // routePoints is a list of Coordinates (latitude, longitude)
+    val pacePerMinute: List<Float> = emptyList(), // pace in min/km for each minute
     val calories: Int = 0,
     val isActive: Boolean = true
 )

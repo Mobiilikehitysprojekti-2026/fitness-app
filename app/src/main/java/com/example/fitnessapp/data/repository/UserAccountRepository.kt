@@ -70,4 +70,20 @@ class UserAccountRepository(
         }
     }
 
+    suspend fun updateHeight(height: Int) {
+        _currentUserAccount.value?.let { user ->
+            val updatedUser = user.copy(height = height)
+            userAccountDao.insertUserAccount(updatedUser)
+            _currentUserAccount.value = updatedUser
+        }
+    }
+
+    suspend fun updateWeight(weight: Int) {
+        _currentUserAccount.value?.let { user ->
+            val updatedUser = user.copy(weight = weight)
+            userAccountDao.insertUserAccount(updatedUser)
+            _currentUserAccount.value = updatedUser
+        }
+    }
+
 }

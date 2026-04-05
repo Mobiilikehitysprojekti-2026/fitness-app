@@ -14,7 +14,7 @@ import com.example.fitnessapp.data.local.entity.WorkoutSession
 
 @Database(
     entities = [UserAccount::class, WorkoutSession::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(RouteConverters::class)   // convert from/to json
