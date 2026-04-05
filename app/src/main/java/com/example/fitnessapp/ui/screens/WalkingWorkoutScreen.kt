@@ -21,23 +21,46 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.fitnessapp.data.model.Coordinates
+import com.example.fitnessapp.ui.components.WorkoutMap
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun WalkingWorkoutScreen(
     navController: NavController,
     viewModel: WorkoutDataViewModel
 ) {
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+
+    LaunchedEffect(Unit) {
+        permissionState.launchMultiplePermissionRequest()
+    }
+
     var isRunning by remember { mutableStateOf(false) }
     var seconds by remember { mutableStateOf(0) }
 
     // Average walking speed: 5 km/h (around 12:00 min/km pace)
     val avgSpeedKmh = 5.0
     val distanceKm = seconds / 3600.0 * avgSpeedKmh
+
+    val routePoints by viewModel.routePoints.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
+    val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
 
     // Pace = time / distance
     val paceStr = if (distanceKm > 0.001) {
@@ -61,7 +84,11 @@ fun WalkingWorkoutScreen(
     val currentCadence = if (seconds > 0) (totalSteps.toDouble() / seconds * 60).toInt() else 0
 
     LaunchedEffect(isRunning) {
-
+        if (isRunning) {
+            viewModel.startTracking()
+        } else {
+            viewModel.stopTracking()
+        }
         while (isRunning) {
             delay(1000L)
             seconds++
@@ -80,16 +107,28 @@ fun WalkingWorkoutScreen(
 
         Text("Walking Workout", fontSize = 26.sp, style = MaterialTheme.typography.headlineMedium)
 
-        // Big timer display
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Time", style = MaterialTheme.typography.labelLarge)
-                Text(formatWalkingTime(seconds), fontSize = 52.sp)
-            }
+        // Map "Window"
+        WorkoutMap(
+            routePoints = routePoints,
+            currentLocation = currentCoords,
+            modifier = Modifier.fillMaxWidth()
+        )
 
+        // Big timer display
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Duration", style = MaterialTheme.typography.titleMedium)
+                Text(formatWalkingTime(seconds), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         // Distance and Pace
@@ -163,9 +202,12 @@ fun WalkingWorkoutScreen(
                 isRunning = false
                 seconds = 0
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Reset")
+            Text("Reset", fontSize = 16.sp)
         }
     }
 

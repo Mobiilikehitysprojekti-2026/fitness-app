@@ -3,8 +3,10 @@ package com.example.fitnessapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitnessapp.data.local.entity.WorkoutSession
+import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.data.repository.UserAccountRepository
 import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import com.example.fitnessapp.managers.LocationManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +17,21 @@ import kotlinx.coroutines.launch
 
 class WorkoutDataViewModel(
     private val userAccountRepository: UserAccountRepository,
-    private val workoutSessionRepository: WorkoutSessionRepository
+    private val workoutSessionRepository: WorkoutSessionRepository,
+    private val locationManager: LocationManager
 ) : ViewModel() {
+
+    val routePoints: StateFlow<List<Coordinates>> = locationManager.routePoints
+    val currentLocation: StateFlow<android.location.Location?> = locationManager.currentLocation
+
+    fun startTracking() {
+        locationManager.resetRoute()
+        locationManager.startTracking()
+    }
+
+    fun stopTracking() {
+        locationManager.stopTracking()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val allSessions: StateFlow<List<WorkoutSession>> = userAccountRepository.currentUserAccount
@@ -52,7 +67,7 @@ class WorkoutDataViewModel(
             endTime = endTime,
             stepCount = steps,
             distanceMeters = (distanceKm * 1000).toFloat(),
-            routePoints = emptyList(),
+            routePoints = locationManager.routePoints.value,
             pacePerMinute = pacePerMinute,
             calories = calculateCalories(type, durationSeconds, distanceKm),
             isActive = false
@@ -60,6 +75,7 @@ class WorkoutDataViewModel(
         
         viewModelScope.launch {
             workoutSessionRepository.insertWorkoutSession(session)
+            locationManager.resetRoute()
         }
     }
 

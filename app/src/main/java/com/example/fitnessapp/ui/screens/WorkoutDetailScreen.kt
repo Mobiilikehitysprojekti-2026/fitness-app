@@ -2,15 +2,19 @@ package com.example.fitnessapp.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.fitnessapp.data.local.entity.WorkoutSession
 import com.example.fitnessapp.ui.components.WorkoutDetailChart
+import com.example.fitnessapp.ui.components.WorkoutMap
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import java.text.DateFormat
 import java.util.Date
@@ -70,6 +74,18 @@ fun WorkoutDetailScreen(
 
         Text(text = "${workout.type} Workout", style = MaterialTheme.typography.headlineMedium)
         Text(text = dateStr, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        // Map showing the saved route
+        if (workout.routePoints.isNotEmpty()) {
+            WorkoutMap(
+                routePoints = workout.routePoints,
+                currentLocation = workout.routePoints.lastOrNull(), // Show last point as final position
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+        }
 
         HorizontalDivider()
 
