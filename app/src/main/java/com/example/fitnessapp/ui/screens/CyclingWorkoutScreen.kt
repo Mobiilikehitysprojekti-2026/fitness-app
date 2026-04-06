@@ -21,18 +21,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.fitnessapp.data.model.Coordinates
+import com.example.fitnessapp.ui.components.WorkoutMap
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CyclingWorkoutScreen(
     navController: NavController,
     viewModel: WorkoutDataViewModel
 ) {
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+
+    LaunchedEffect(Unit) {
+        permissionState.launchMultiplePermissionRequest()
+    }
 
     var isRunning by remember { mutableStateOf(false) }
 
@@ -48,6 +66,9 @@ fun CyclingWorkoutScreen(
 
     val distanceKm = seconds / 3600.0 * avgSpeedKmh
 
+    val routePoints by viewModel.routePoints.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
+    val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
 
     // Pace in min/km
     val paceStr = if (distanceKm > 0.001) {
@@ -65,7 +86,11 @@ fun CyclingWorkoutScreen(
     val avgPower = if (seconds > 0) totalPower / seconds else 0
 
     LaunchedEffect(isRunning) {
-
+        if (isRunning) {
+            viewModel.startTracking()
+        } else {
+            viewModel.stopTracking()
+        }
         while (isRunning) {
             delay(1000L)
             seconds++
@@ -88,14 +113,27 @@ fun CyclingWorkoutScreen(
 
         Text("Cycling Workout", fontSize = 26.sp, style = MaterialTheme.typography.headlineMedium)
 
+        // Map "Window"
+        WorkoutMap(
+            routePoints = routePoints,
+            currentLocation = currentCoords,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // Big timer display
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Time", style = MaterialTheme.typography.labelLarge)
-                Text(formatCyclingTime(seconds), fontSize = 52.sp)
+                Text("Duration", style = MaterialTheme.typography.titleMedium)
+                Text(formatCyclingTime(seconds), fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -180,9 +218,12 @@ fun CyclingWorkoutScreen(
                 currentPower = 0
                 totalPower = 0
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Reset")
+            Text("Reset", fontSize = 16.sp)
         }
     }
 

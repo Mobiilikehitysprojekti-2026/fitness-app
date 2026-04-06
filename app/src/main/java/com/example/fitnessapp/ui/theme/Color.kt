@@ -2,10 +2,16 @@ package com.example.fitnessapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Light Theme Colors
+val FitnessOrange = Color(0xFFFF5722)
+val FitnessGreen = Color(0xFF4CAF50)
+val FitnessBlue = Color(0xFF2196F3)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Dark Theme Colors (Neon variants)
+val FitnessOrangeLight = Color(0xFFFF8A65)
+val FitnessGreenLight = Color(0xFF81C784)
+val FitnessBlueLight = Color(0xFF64B5F6)
+
+// Neutral Colors
+val DarkGrey = Color(0xFF121212)
+val LightGrey = Color(0xFFF5F5F5)

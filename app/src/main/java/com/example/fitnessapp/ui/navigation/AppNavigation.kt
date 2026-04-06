@@ -1,9 +1,12 @@
 package com.example.fitnessapp.ui.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +40,9 @@ import com.example.fitnessapp.ui.screens.WorkoutsScreen
 import com.example.fitnessapp.viewmodel.AuthViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
+import com.example.fitnessapp.viewmodel.ThemeViewModel
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +80,17 @@ fun AppNavigation(container: AppContainer) {
     val workoutDataViewModel = remember {
         WorkoutDataViewModel(
             container.userAccountRepository,
-            container.workoutSessionRepository
+            container.workoutSessionRepository,
+            container.locationManager
         )
     }
+
+    // themeViewModel
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ThemeViewModel.Factory(container.userPreferencesManager)
+    )
+    val isDarkThemeStored by themeViewModel.isDarkMode.collectAsState()
+    val isDarkTheme = isDarkThemeStored ?: isSystemInDarkTheme()
 
     // userAccount
     val userAccount by container.userAccountRepository.currentUserAccount.collectAsState()
@@ -117,6 +130,14 @@ fun AppNavigation(container: AppContainer) {
                             }
                         }
 
+                    },
+                    actions = {
+                        IconButton(onClick = { themeViewModel.toggleTheme(!isDarkTheme) }) {
+                            Icon(
+                                imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                contentDescription = "Toggle Theme"
+                            )
+                        }
                     }
                 )
 
