@@ -1,117 +1,150 @@
 package com.example.fitnessapp.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.os.Looper
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.fitnessapp.viewmodel.CyclingWorkoutViewModel
-import com.example.fitnessapp.viewmodel.WorkoutListViewModel
+import com.example.fitnessapp.data.model.Coordinates
+import com.example.fitnessapp.ui.components.WorkoutMap
+import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CyclingWorkoutScreen(
     navController: NavController,
-    viewModel: CyclingWorkoutViewModel,
-    workoutListViewModel: WorkoutListViewModel
+    viewModel: WorkoutDataViewModel
 ) {
-    val context = LocalContext.current
-    val locationManager = remember { context.getSystemService(LocationManager::class.java) }
-
-    var hasLocationPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
         )
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasLocationPermission = granted
-    }
+    )
 
     LaunchedEffect(Unit) {
-        if (!hasLocationPermission) {
-            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
+        permissionState.launchMultiplePermissionRequest()
     }
 
-    // GPS location updates
-    DisposableEffect(hasLocationPermission) {
-        if (!hasLocationPermission) return@DisposableEffect onDispose { }
-        val locationListener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                viewModel.onLocationUpdate(location.latitude, location.longitude, location.speed)
-            }
-        }
-        try {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                2000L,
-                5f,
-                locationListener,
-                Looper.getMainLooper()
-            )
-        } catch (_: SecurityException) {}
-        onDispose { locationManager.removeUpdates(locationListener) }
-    }
+    var isRunning by remember { mutableStateOf(false) }
 
-    // Timer tick
-    LaunchedEffect(viewModel.isActive) {
-        while (viewModel.isActive) {
-            delay(1000L)
-            viewModel.tick()
-        }
-    }
+    var seconds by remember { mutableStateOf(0) }
 
-    val seconds = viewModel.elapsedSeconds
-    val distanceKm = viewModel.distanceKm
-    val currentSpeedKmh = viewModel.currentSpeedKmh
-    val avgSpeedKmh = viewModel.avgSpeedKmh
+    var currentPower by remember { mutableStateOf(0) }
 
-    val paceStr = if (distanceKm > 0.001 && seconds > 0) {
+    var totalPower by remember { mutableStateOf(0) }
+
+
+    // Average cycling speed: 20 km/h
+    val avgSpeedKmh = 20.0
+
+    val distanceKm = seconds / 3600.0 * avgSpeedKmh
+
+    val routePoints by viewModel.routePoints.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
+    val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
+
+    // Pace in min/km
+    val paceStr = if (distanceKm > 0.001) {
+
         val paceSeconds = (seconds / distanceKm).toInt()
         val paceMin = paceSeconds / 60
         val paceSec = paceSeconds % 60
         "$paceMin:${paceSec.toString().padStart(2, '0')} /km"
     } else {
+
         "--:-- /km"
     }
 
+    // Average power in watts
+    val avgPower = if (seconds > 0) totalPower / seconds else 0
+
+    LaunchedEffect(isRunning) {
+        if (isRunning) {
+            viewModel.startTracking()
+        } else {
+            viewModel.stopTracking()
+        }
+        while (isRunning) {
+            delay(1000L)
+            seconds++
+            // Simulate power output: recreational cyclist averages around 150W
+            // Random variation between 120 and 200 watts to simulate real riding
+            currentPower = 120 + Random.nextInt(0, 80)
+            totalPower += currentPower
+        }
+
+    }
+
     Column(
+
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         Text("Cycling Workout", fontSize = 26.sp, style = MaterialTheme.typography.headlineMedium)
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+        // Map "Window"
+        WorkoutMap(
+            routePoints = routePoints,
+            currentLocation = currentCoords,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Big timer display
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Time", style = MaterialTheme.typography.labelLarge)
-                Text(formatTime(seconds), fontSize = 52.sp)
+                Text("Duration", style = MaterialTheme.typography.titleMedium)
+                Text(formatCyclingTime(seconds), fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+
+        // Distance and Pace
+        Row(
+
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Distance", style = MaterialTheme.typography.labelLarge)
                 Text(String.format("%.2f km", distanceKm), fontSize = 22.sp)
@@ -120,71 +153,84 @@ fun CyclingWorkoutScreen(
                 Text("Pace", style = MaterialTheme.typography.labelLarge)
                 Text(paceStr, fontSize = 22.sp)
             }
+
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        // Power output
+        Row(
+
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Speed", style = MaterialTheme.typography.labelLarge)
+                Text("Current Power", style = MaterialTheme.typography.labelLarge)
                 Text(
-                    if (viewModel.isActive && currentSpeedKmh > 0)
-                        String.format("%.1f km/h", currentSpeedKmh)
-                    else "-- km/h",
+                    if (isRunning && seconds > 0) "$currentPower W" else "-- W",
                     fontSize = 22.sp
                 )
+
             }
+
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Avg Speed", style = MaterialTheme.typography.labelLarge)
-                Text(
-                    if (seconds > 0) String.format("%.1f km/h", avgSpeedKmh) else "-- km/h",
-                    fontSize = 22.sp
-                )
+                Text("Avg Power", style = MaterialTheme.typography.labelLarge)
+                Text(if (seconds > 0) "$avgPower W" else "-- W", fontSize = 22.sp)
             }
         }
 
-        if (!hasLocationPermission) {
-            Text(
-                "GPS distance and speed require Location permission.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { if (viewModel.isActive) viewModel.stop() else viewModel.start() },
-            modifier = Modifier.fillMaxWidth().height(60.dp)
+
+            onClick = { isRunning = !isRunning },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
         ) {
-            Text(if (viewModel.isActive) "STOP" else "START", fontSize = 20.sp)
+
+            Text(if (isRunning) "STOP" else "START", fontSize = 20.sp)
         }
 
-        if (!viewModel.isActive && seconds > 0) {
+        if (!isRunning && seconds > 0) {
             Button(
                 onClick = {
-                    workoutListViewModel.addWorkout(
+                    viewModel.saveWorkout(
                         type = "Cycling",
                         durationSeconds = seconds,
-                        distanceKm = distanceKm
+                        distanceKm = distanceKm,
+                        avgPowerW = avgPower
                     )
-                    viewModel.reset()
+
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
+
                 Text("Save Workout")
             }
+
         }
 
         OutlinedButton(
-            onClick = { viewModel.reset() },
-            modifier = Modifier.fillMaxWidth()
+            onClick = {
+                isRunning = false
+                seconds = 0
+                currentPower = 0
+                totalPower = 0
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Reset")
+            Text("Reset", fontSize = 16.sp)
         }
     }
+
 }
 
-private fun formatTime(totalSeconds: Int): String {
+private fun formatCyclingTime(totalSeconds: Int): String {
+
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60
     val secs = totalSeconds % 60
@@ -193,4 +239,5 @@ private fun formatTime(totalSeconds: Int): String {
     } else {
         "${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}"
     }
+
 }

@@ -2,7 +2,7 @@ package com.example.fitnessapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fitnessapp.repository.UserAccountRepository
+import com.example.fitnessapp.data.repository.UserAccountRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -10,44 +10,50 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ProfileUiState(
-    val height: Float? = null,
-    val weight: Float? = null
+    val height: Float = 175f,
+    val weight: Float = 75f
 ) {
-    val bmi: Float?
+    val bmi: Float
         get() {
-            if (height == null || weight == null || height <= 0f) return null
             val h = height / 100f
-            return weight / (h * h)
+            return if (h > 0) weight / (h * h) else 0f
         }
 
-    val bmiCategory: String?
-        get() = bmi?.let {
-            when {
-                it < 18.5f -> "Underweight"
-                it < 25f   -> "Normal"
-                it < 30f   -> "Overweight"
-                else       -> "Obese"
-            }
+    val bmiCategory: String
+        get() = when {
+            bmi < 18.5f -> "Underweight"
+            bmi < 25f   -> "Normal"
+            bmi < 30f   -> "Overweight"
+            else       -> "Obese"
         }
 }
 
 class ProfileViewModel(
-    val userAccountRepository: UserAccountRepository
+    private val userAccountRepository: UserAccountRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<ProfileUiState> = userAccountRepository.userAccount
-        .map { account -> ProfileUiState(height = account.height, weight = account.weight) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = userAccountRepository.currentUserAccount
+        .map { user ->
+            if (user != null) {
+                ProfileUiState(height = user.height.toFloat(), weight = user.weight.toFloat())
+            } else {
+                ProfileUiState()
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
 
     fun saveHeight(value: String) {
-        value.toFloatOrNull()?.let {
-            viewModelScope.launch { userAccountRepository.saveHeight(it) }
+        value.toFloatOrNull()?.let { height ->
+            viewModelScope.launch {
+                userAccountRepository.updateHeight(height.toInt())
+            }
         }
     }
 
     fun saveWeight(value: String) {
-        value.toFloatOrNull()?.let {
-            viewModelScope.launch { userAccountRepository.saveWeight(it) }
+        value.toFloatOrNull()?.let { weight ->
+            viewModelScope.launch {
+                userAccountRepository.updateWeight(weight.toInt())
+            }
         }
     }
 }

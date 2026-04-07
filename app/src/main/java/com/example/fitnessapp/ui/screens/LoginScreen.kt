@@ -77,6 +77,7 @@ fun LoginScreen(
             is LoginState.Error -> Text(loginState.message)
             is LoginState.Success -> {
                 LaunchedEffect(Unit) {
+                    authViewModel.resetLoginState()
                     navController.navigate(ROUTE_HOME) {
                         popUpTo(ROUTE_LOGIN) { inclusive = true }
                     }

@@ -1,26 +1,22 @@
-package com.example.fitnessapp.viewmodel
+package com.example.fitnessapp.model
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
-import com.example.fitnessapp.repository.UserAccountRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 data class CompletedWorkout(
     val id: Int,
-    val type: String,
+    val type: String,           // "Running", "Cycling", "Walking"
     val durationSeconds: Int,
-    val distanceKm: Double,
+    val distanceKm: Double,     // currently mock speed * time; will be replaced with something else
     val date: String,
-    val steps: Int = 0,
-    val avgPowerW: Int = 0
+    val steps: Int = 0,         // for running/walking
+    val avgPowerW: Int = 0,      // for cycling
+    val pacePerMinute: List<Float> = emptyList()
 )
 
-class WorkoutListViewModel(
-    val userAccountRepository: UserAccountRepository
-) : ViewModel() {
-
+object WorkoutRepository {
     val workouts = mutableStateListOf<CompletedWorkout>()
     private var nextId = 1
 
@@ -29,7 +25,8 @@ class WorkoutListViewModel(
         durationSeconds: Int,
         distanceKm: Double,
         steps: Int = 0,
-        avgPowerW: Int = 0
+        avgPowerW: Int = 0,
+        pacePerMinute: List<Float> = emptyList()
     ) {
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
         workouts.add(
@@ -41,7 +38,8 @@ class WorkoutListViewModel(
                 distanceKm = distanceKm,
                 date = dateStr,
                 steps = steps,
-                avgPowerW = avgPowerW
+                avgPowerW = avgPowerW,
+                pacePerMinute = pacePerMinute
             )
         )
     }

@@ -27,4 +27,8 @@ class WorkoutSessionRepository(private val workoutSessionDao: WorkoutSessionDao)
     fun getAllWorkoutSessionsOfUser(userId: String): Flow<List<WorkoutSession>> {
         return workoutSessionDao.getAllWorkoutSessionsOfUser(userId)
     }
+
+    suspend fun getWorkoutSessionById(id: String): WorkoutSession? {
+        return workoutSessionDao.getWorkoutSessionById(id)
+    }
 }
