@@ -25,8 +25,10 @@ class StepManager(context: Context) {
     private val _stepCount = MutableStateFlow(0)
     val stepCount: StateFlow<Int> = _stepCount.asStateFlow()
 
+
     private var listener: SensorEventListener? = null
 
+    // Registers the sensor listener and increments stepCount on each step
     fun startTracking() {
         listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
@@ -39,14 +41,17 @@ class StepManager(context: Context) {
         }
     }
 
+    // Unregisters the sensor listener to stop counting steps
     fun stopTracking() {
         listener?.let { sensorManager.unregisterListener(it) }
         listener = null
     }
 
+    // Resets step count back to zero (call before starting a new workout)
     fun reset() {
         _stepCount.value = 0
     }
 
+    // Returns false if the device has no step detector hardware
     fun isAvailable(): Boolean = stepSensor != null
 }
