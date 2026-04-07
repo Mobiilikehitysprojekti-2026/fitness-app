@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -49,8 +50,14 @@ fun AppNavigation(container: AppContainer) {
     // Initialize all ViewModels here
     val profileViewModel = viewModel { ProfileViewModel(UserAccountRepository) }
     val workoutListViewModel = viewModel { WorkoutListViewModel(UserAccountRepository) }
-    val runningWorkoutViewModel = viewModel(key = "running") { StepWorkoutViewModel(UserAccountRepository) }
-    val walkingWorkoutViewModel = viewModel(key = "walking") { StepWorkoutViewModel(UserAccountRepository) }
+    val runningWorkoutViewModel = viewModel(key = "running") {
+        val app = checkNotNull(get(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY))
+        StepWorkoutViewModel(app, container.userAccountRepository, container.workoutSessionRepository)
+    }
+    val walkingWorkoutViewModel = viewModel(key = "walking") {
+        val app = checkNotNull(get(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY))
+        StepWorkoutViewModel(app, container.userAccountRepository, container.workoutSessionRepository)
+    }
     val cyclingWorkoutViewModel = viewModel { CyclingWorkoutViewModel(UserAccountRepository) }
     val authViewModel = viewModel { AuthViewModel(container.userAccountRepository) }
 

@@ -1,78 +1,124 @@
 package com.example.fitnessapp.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import com.example.fitnessapp.repository.UserAccountRepository
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fitnessapp.data.local.entity.WorkoutSession
+import com.example.fitnessapp.data.repository.UserAccountRepository
+import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import com.example.fitnessapp.managers.LocationManager
+import com.example.fitnessapp.managers.StepManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class StepWorkoutViewModel(
-    val userAccountRepository: UserAccountRepository
-) : ViewModel() {
+    application: Application,
+    val userAccountRepository: UserAccountRepository,
+    private val workoutSessionRepository: WorkoutSessionRepository
+) : AndroidViewModel(application) {
 
-    var isActive by mutableStateOf(false)
-        private set
-    var elapsedSeconds by mutableStateOf(0)
-        private set
-    var totalSteps by mutableStateOf(0)
-        private set
-    var distanceKm by mutableStateOf(0.0)
-        private set
+    private val stepMgr = StepManager(application)
+    private val locationMgr = LocationManager(application)
 
-    private var stepBaseline = -1
-    private var lastLat: Double? = null
-    private var lastLon: Double? = null
+    private val _isActive = MutableStateFlow(false)
+    val isActive: StateFlow<Boolean> = _isActive.asStateFlow()
+
+    private val _elapsedSeconds = MutableStateFlow(0)
+    val elapsedSeconds: StateFlow<Int> = _elapsedSeconds.asStateFlow()
+
+    val totalSteps: StateFlow<Int> = stepMgr.stepCount
+
+    private val _distanceKm = MutableStateFlow(0.0)
+    val distanceKm: StateFlow<Double> = _distanceKm.asStateFlow()
+
+    val paceStr: String
+        get() {
+            val d = _distanceKm.value
+            val s = _elapsedSeconds.value
+            return if (d > 0.001 && s > 0) {
+                val paceSeconds = (s / d).toInt()
+                "${paceSeconds / 60}:${(paceSeconds % 60).toString().padStart(2, '0')} /km"
+            } else "--:-- /km"
+        }
+
+    val cadence: Int
+        get() {
+            val s = _elapsedSeconds.value
+            return if (s > 0) (stepMgr.stepCount.value.toDouble() / s * 60).toInt() else 0
+        }
+
+    private var workoutStartTime: Long = 0L
+    private var timerJob: Job? = null
+    private var locationJob: Job? = null
+
+    fun registerSensors() {
+        stepMgr.startTracking()
+    }
+
+    fun unregisterSensors() {
+        stepMgr.stopTracking()
+    }
+
+    fun registerLocation() {
+        locationMgr.startTracking()
+        locationJob = viewModelScope.launch {
+            locationMgr.routePoints.collect {
+                _distanceKm.value = (locationMgr.calculateTotalDistance() / 1000.0)
+            }
+        }
+    }
+
+    fun unregisterLocation() {
+        locationJob?.cancel()
+        locationMgr.stopTracking()
+    }
 
     fun start() {
-        isActive = true
+        workoutStartTime = System.currentTimeMillis()
+        _isActive.value = true
+        timerJob = viewModelScope.launch {
+            while (_isActive.value) {
+                delay(1000L)
+                _elapsedSeconds.value++
+            }
+        }
     }
 
     fun stop() {
-        isActive = false
+        _isActive.value = false
+        timerJob?.cancel()
     }
 
-    fun tick() {
-        if (isActive) elapsedSeconds++
-    }
-
-    fun onStepSensorEvent(cumulativeSteps: Int) {
-        if (!isActive) return
-        if (stepBaseline < 0) stepBaseline = cumulativeSteps
-        totalSteps = cumulativeSteps - stepBaseline
-    }
-
-    fun onLocationUpdate(lat: Double, lon: Double) {
-        if (!isActive) return
-        val prev = lastLat
-        val prevLon = lastLon
-        if (prev != null && prevLon != null) {
-            distanceKm += haversineKm(prev, prevLon, lat, lon)
-        }
-        lastLat = lat
-        lastLon = lon
+    suspend fun saveToDatabase(type: String) {
+        val userId = userAccountRepository.currentUserAccount.value?.id ?: return
+        val session = WorkoutSession(
+            userId = userId,
+            type = type,
+            startTime = workoutStartTime,
+            endTime = System.currentTimeMillis(),
+            stepCount = stepMgr.stepCount.value,
+            distanceMeters = locationMgr.calculateTotalDistance(),
+            routePoints = locationMgr.routePoints.value,
+            isActive = false
+        )
+        workoutSessionRepository.insertWorkoutSession(session)
     }
 
     fun reset() {
-        isActive = false
-        elapsedSeconds = 0
-        totalSteps = 0
-        distanceKm = 0.0
-        stepBaseline = -1
-        lastLat = null
-        lastLon = null
+        stop()
+        _elapsedSeconds.value = 0
+        _distanceKm.value = 0.0
+        stepMgr.reset()
+        locationMgr.resetRoute()
     }
 
-    private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val r = 6371.0
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val a = sin(dLat / 2).pow(2) +
-                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
-        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
+    override fun onCleared() {
+        super.onCleared()
+        unregisterSensors()
+        unregisterLocation()
     }
 }
