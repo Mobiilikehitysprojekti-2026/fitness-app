@@ -2,6 +2,7 @@ package com.example.fitnessapp.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitnessapp.data.local.entity.WorkoutSession
 import com.example.fitnessapp.data.repository.UserAccountRepository
@@ -16,24 +17,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class StepWorkoutViewModel(
-    application: Application,
+    private
+
+    val locationManager: LocationManager,
+    val stepManager: StepManager,
     val userAccountRepository: UserAccountRepository,
     private val workoutSessionRepository: WorkoutSessionRepository
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
-    private val stepMgr = StepManager(application)
-    private val locationMgr = LocationManager(application)
 
+    // True while a workout is running
     private val _isActive = MutableStateFlow(false)
     val isActive: StateFlow<Boolean> = _isActive.asStateFlow()
 
     private val _elapsedSeconds = MutableStateFlow(0)
     val elapsedSeconds: StateFlow<Int> = _elapsedSeconds.asStateFlow()
 
-    val totalSteps: StateFlow<Int> = stepMgr.stepCount
+    val totalSteps: StateFlow<Int> = stepManager.stepCount
 
     private val _distanceKm = MutableStateFlow(0.0)
     val distanceKm: StateFlow<Double> = _distanceKm.asStateFlow()
+
 
     val paceStr: String
         get() {
@@ -45,6 +49,7 @@ class StepWorkoutViewModel(
             } else "--:-- /km"
         }
 
+    // Steps per minute based on elapsed time
     val cadence: Int
         get() {
             val s = _elapsedSeconds.value
@@ -63,6 +68,7 @@ class StepWorkoutViewModel(
         stepMgr.stopTracking()
     }
 
+    // Starts location tracking and updates distanceKm whenever new route points arrive
     fun registerLocation() {
         locationMgr.startTracking()
         locationJob = viewModelScope.launch {
@@ -77,6 +83,7 @@ class StepWorkoutViewModel(
         locationMgr.stopTracking()
     }
 
+    // Starts the 1-second timer and records the workout start time
     fun start() {
         workoutStartTime = System.currentTimeMillis()
         _isActive.value = true
@@ -93,6 +100,7 @@ class StepWorkoutViewModel(
         timerJob?.cancel()
     }
 
+    // Builds a WorkoutSession from current state
     suspend fun saveToDatabase(type: String) {
         val userId = userAccountRepository.currentUserAccount.value?.id ?: return
         val session = WorkoutSession(
@@ -108,6 +116,7 @@ class StepWorkoutViewModel(
         workoutSessionRepository.insertWorkoutSession(session)
     }
 
+    // Stops the workout and clears all data
     fun reset() {
         stop()
         _elapsedSeconds.value = 0
@@ -116,6 +125,7 @@ class StepWorkoutViewModel(
         locationMgr.resetRoute()
     }
 
+    // Clean up sensors and location when the ViewModel is destroyed
     override fun onCleared() {
         super.onCleared()
         unregisterSensors()
