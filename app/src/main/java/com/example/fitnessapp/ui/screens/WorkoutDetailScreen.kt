@@ -80,6 +80,7 @@ fun WorkoutDetailScreen(
             WorkoutMap(
                 routePoints = workout.routePoints,
                 currentLocation = workout.routePoints.lastOrNull(), // Show last point as final position
+                isStatic = true, // For history view, we want to see the whole route
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)

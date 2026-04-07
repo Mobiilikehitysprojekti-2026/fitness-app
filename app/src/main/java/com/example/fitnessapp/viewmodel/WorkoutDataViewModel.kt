@@ -17,21 +17,8 @@ import kotlinx.coroutines.launch
 
 class WorkoutDataViewModel(
     private val userAccountRepository: UserAccountRepository,
-    private val workoutSessionRepository: WorkoutSessionRepository,
-    private val locationManager: LocationManager
+    private val workoutSessionRepository: WorkoutSessionRepository
 ) : ViewModel() {
-
-    val routePoints: StateFlow<List<Coordinates>> = locationManager.routePoints
-    val currentLocation: StateFlow<android.location.Location?> = locationManager.currentLocation
-
-    fun startTracking() {
-        locationManager.resetRoute()
-        locationManager.startTracking()
-    }
-
-    fun stopTracking() {
-        locationManager.stopTracking()
-    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val allSessions: StateFlow<List<WorkoutSession>> = userAccountRepository.currentUserAccount
@@ -52,6 +39,7 @@ class WorkoutDataViewModel(
         type: String,
         durationSeconds: Int,
         distanceKm: Double,
+        routePoints: List<Coordinates>,
         steps: Int = 0,
         avgPowerW: Int = 0,
         pacePerMinute: List<Float> = emptyList()
@@ -67,7 +55,7 @@ class WorkoutDataViewModel(
             endTime = endTime,
             stepCount = steps,
             distanceMeters = (distanceKm * 1000).toFloat(),
-            routePoints = locationManager.routePoints.value,
+            routePoints = routePoints,
             pacePerMinute = pacePerMinute,
             calories = calculateCalories(type, durationSeconds, distanceKm),
             isActive = false
@@ -75,7 +63,6 @@ class WorkoutDataViewModel(
         
         viewModelScope.launch {
             workoutSessionRepository.insertWorkoutSession(session)
-            locationManager.resetRoute()
         }
     }
 

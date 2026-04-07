@@ -38,6 +38,7 @@ import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
 import com.example.fitnessapp.ui.screens.WorkoutsScreen
 import com.example.fitnessapp.viewmodel.AuthViewModel
+import com.example.fitnessapp.viewmodel.MapViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
 import com.example.fitnessapp.viewmodel.ThemeViewModel
@@ -80,7 +81,13 @@ fun AppNavigation(container: AppContainer) {
     val workoutDataViewModel = remember {
         WorkoutDataViewModel(
             container.userAccountRepository,
-            container.workoutSessionRepository,
+            container.workoutSessionRepository
+        )
+    }
+
+    // mapViewModel
+    val mapViewModel = remember {
+        MapViewModel(
             container.locationManager
         )
     }
@@ -164,9 +171,9 @@ fun AppNavigation(container: AppContainer) {
             composable(ROUTE_SIGNUP)           { SignupScreen(navController, authViewModel) }
             composable(ROUTE_WORKOUT_DATA)     { WorkoutDataScreen(navController, workoutDataViewModel) }
             composable(ROUTE_WORKOUTS)         { WorkoutsScreen(navController) }
-            composable(ROUTE_RUNNING_WORKOUT)  { RunningWorkoutScreen(navController, workoutDataViewModel) }
-            composable(ROUTE_CYCLING_WORKOUT)  { CyclingWorkoutScreen(navController, workoutDataViewModel) }
-            composable(ROUTE_WALKING_WORKOUT)  { WalkingWorkoutScreen(navController, workoutDataViewModel) }
+            composable(ROUTE_RUNNING_WORKOUT)  { RunningWorkoutScreen(navController, workoutDataViewModel, mapViewModel) }
+            composable(ROUTE_CYCLING_WORKOUT)  { CyclingWorkoutScreen(navController, workoutDataViewModel, mapViewModel) }
+            composable(ROUTE_WALKING_WORKOUT)  { WalkingWorkoutScreen(navController, workoutDataViewModel, mapViewModel) }
             composable(
                 route = "$ROUTE_WORKOUT_DETAIL/{workoutId}",
                 arguments = listOf(navArgument("workoutId") { type = NavType.StringType })

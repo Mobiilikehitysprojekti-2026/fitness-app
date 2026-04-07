@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.ui.components.WorkoutMap
+import com.example.fitnessapp.viewmodel.MapViewModel
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -38,7 +39,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun WalkingWorkoutScreen(
     navController: NavController,
-    viewModel: WorkoutDataViewModel
+    viewModel: WorkoutDataViewModel,
+    mapViewModel: MapViewModel
 ) {
     val permissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -58,8 +60,8 @@ fun WalkingWorkoutScreen(
     val avgSpeedKmh = 5.0
     val distanceKm = seconds / 3600.0 * avgSpeedKmh
 
-    val routePoints by viewModel.routePoints.collectAsState()
-    val currentLocation by viewModel.currentLocation.collectAsState()
+    val routePoints by mapViewModel.routePoints.collectAsState()
+    val currentLocation by mapViewModel.currentLocation.collectAsState()
     val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
 
     // Pace = time / distance
@@ -85,15 +87,14 @@ fun WalkingWorkoutScreen(
 
     LaunchedEffect(isRunning) {
         if (isRunning) {
-            viewModel.startTracking()
+            mapViewModel.startTracking()
         } else {
-            viewModel.stopTracking()
+            mapViewModel.stopTracking()
         }
         while (isRunning) {
             delay(1000L)
             seconds++
         }
-
     }
 
     Column(
@@ -186,8 +187,10 @@ fun WalkingWorkoutScreen(
                         type = "Walking",
                         durationSeconds = seconds,
                         distanceKm = distanceKm,
+                        routePoints = routePoints,
                         steps = totalSteps
                     )
+                    mapViewModel.resetMap()
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -201,6 +204,7 @@ fun WalkingWorkoutScreen(
             onClick = {
                 isRunning = false
                 seconds = 0
+                mapViewModel.resetMap()
             },
             modifier = Modifier
                 .fillMaxWidth()

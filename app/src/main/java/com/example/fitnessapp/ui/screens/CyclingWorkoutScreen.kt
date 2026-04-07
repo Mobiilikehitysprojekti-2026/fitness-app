@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.ui.components.WorkoutMap
+import com.example.fitnessapp.viewmodel.MapViewModel
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -39,7 +40,8 @@ import kotlin.random.Random
 @Composable
 fun CyclingWorkoutScreen(
     navController: NavController,
-    viewModel: WorkoutDataViewModel
+    viewModel: WorkoutDataViewModel,
+    mapViewModel: MapViewModel
 ) {
     val permissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -66,8 +68,8 @@ fun CyclingWorkoutScreen(
 
     val distanceKm = seconds / 3600.0 * avgSpeedKmh
 
-    val routePoints by viewModel.routePoints.collectAsState()
-    val currentLocation by viewModel.currentLocation.collectAsState()
+    val routePoints by mapViewModel.routePoints.collectAsState()
+    val currentLocation by mapViewModel.currentLocation.collectAsState()
     val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
 
     // Pace in min/km
@@ -87,9 +89,9 @@ fun CyclingWorkoutScreen(
 
     LaunchedEffect(isRunning) {
         if (isRunning) {
-            viewModel.startTracking()
+            mapViewModel.startTracking()
         } else {
-            viewModel.stopTracking()
+            mapViewModel.stopTracking()
         }
         while (isRunning) {
             delay(1000L)
@@ -99,7 +101,6 @@ fun CyclingWorkoutScreen(
             currentPower = 120 + Random.nextInt(0, 80)
             totalPower += currentPower
         }
-
     }
 
     Column(
@@ -198,9 +199,10 @@ fun CyclingWorkoutScreen(
                         type = "Cycling",
                         durationSeconds = seconds,
                         distanceKm = distanceKm,
+                        routePoints = routePoints,
                         avgPowerW = avgPower
                     )
-
+                    mapViewModel.resetMap()
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -217,6 +219,7 @@ fun CyclingWorkoutScreen(
                 seconds = 0
                 currentPower = 0
                 totalPower = 0
+                mapViewModel.resetMap()
             },
             modifier = Modifier
                 .fillMaxWidth()

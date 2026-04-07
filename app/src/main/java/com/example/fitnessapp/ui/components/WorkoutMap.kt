@@ -51,7 +51,7 @@ fun WorkoutMap(
             .height(200.dp)
             .clip(RoundedCornerShape(16.dp)),
         update = { view ->
-            // Очищаем старые наложения (линии и маркеры)
+            // Delete all overlays
             view.overlays.clear()
 
             // Route (Polyline)
