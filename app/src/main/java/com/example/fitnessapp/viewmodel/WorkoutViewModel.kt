@@ -268,7 +268,7 @@ class WorkoutViewModel(
     }
 
 
-    // format the time (called from the UI)
+    // helper function to format the time (called from the UI)
     @SuppressLint("DefaultLocale")
     fun formatDisplayTime(): String {
         val totalSeconds = secondsElapsed
@@ -285,7 +285,7 @@ class WorkoutViewModel(
         }
     }
 
-    // formate the pace
+    // helper function to formate the pace
     fun formatAveragePace(): String {
         val pace = averagePace
         if (pace <= 0 || pace.isInfinite()) return "0:00"
