@@ -124,23 +124,23 @@ fun AppNavigation(container: AppContainer) {
     val bottomBarRoutes = setOf(ROUTE_HOME, ROUTE_WORKOUTS_LIST, ROUTE_PROFILE, ROUTE_SETTINGS)
 
     Scaffold(
-
         topBar = {
             screenTitle?.let {
                 TopAppBar(
-
                     title = { Text(it) },
                     navigationIcon = {
-
                         if (navController.previousBackStackEntry != null) {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
-                                )
+                            IconButton(onClick = {
+                                // is a workout in progress or not yet saved (display a dialog)
+                                if (currentRoute == ROUTE_WORKOUT && workoutViewModel.currentSession.value != null) {
+                                    workoutViewModel.requestExit()
+                                } else {
+                                    navController.popBackStack()
+                                }
+                            }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                             }
                         }
-
                     },
                     actions = {
                         IconButton(onClick = { themeViewModel.toggleTheme(!isDarkTheme) }) {
@@ -151,9 +151,9 @@ fun AppNavigation(container: AppContainer) {
                         }
                     }
                 )
-
             }
         },
+
         bottomBar = {
 
             if (currentRoute in bottomBarRoutes) {

@@ -93,21 +93,53 @@ fun WorkoutScreen(
         return
     }
 
-    //-----------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
 
-    //---------------------------State Variables-----------------------------
+    //----------------------State variables for the workoutViewModel----------------------
     val currentSession by workoutViewModel.currentSession.collectAsStateWithLifecycle()
-    val currentUserAccount by workoutViewModel.currentUserAccount.collectAsStateWithLifecycle()
+    //val currentUserAccount by workoutViewModel.currentUserAccount.collectAsStateWithLifecycle()
     val isMoving by workoutViewModel.isMoving.collectAsStateWithLifecycle()
     val stepCount by workoutViewModel.stepCount.collectAsStateWithLifecycle()
     val totalDistance by workoutViewModel.totalDistance.collectAsStateWithLifecycle()
     val selectedWorkout by workoutViewModel.selectedWorkout.collectAsStateWithLifecycle()
-    val pacePerMinute by workoutViewModel.pacePerMinute.collectAsStateWithLifecycle()
+    //val pacePerMinute by workoutViewModel.pacePerMinute.collectAsStateWithLifecycle()
     val routePoints by workoutViewModel.routePoints.collectAsStateWithLifecycle()
     val currentLocation by workoutViewModel.currentLocation.collectAsStateWithLifecycle()
     val currentCoords = currentLocation?.let { Coordinates(it.latitude, it.longitude) }
-    //-----------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     val stepsPerMinute = workoutViewModel.stepsPerMinute
+
+
+    //-------------------------- Back navigation dialog ----------------------------------
+    val showDialog by workoutViewModel.showExitDialog.collectAsState()
+    // handle system back button
+    BackHandler(enabled = currentSession != null) {
+        workoutViewModel.requestExit()
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { workoutViewModel.dismissExitDialog() },
+            title = { Text("Quit Workout?") },
+            text = { Text("Going back will stop and reset progress.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    workoutViewModel.dismissExitDialog()
+                    workoutViewModel.resetWorkout()
+                    navController.popBackStack()
+                }) { Text("Quit") }
+            },
+            dismissButton = {
+                TextButton(onClick = { workoutViewModel.dismissExitDialog() }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    //------------------------------------------------------------------------------------
+
+
+
 
     Column(
 

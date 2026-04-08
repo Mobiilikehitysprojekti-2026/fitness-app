@@ -170,8 +170,8 @@ class WorkoutViewModel(
             _currentSession.value?.let { session ->
                 workoutSessionRepository.insertWorkoutSession(session)
 
-                // reset the route
-                locationManager.resetRoute()
+                // reset the the workout after saving to DB
+                resetWorkout()
             }
         }
     }
@@ -293,4 +293,19 @@ class WorkoutViewModel(
         val secs = ((pace - mins) * 60).toInt().coerceIn(0, 59)
         return "%d:%02d".format(mins, secs)
     }
+
+
+
+    // ------------------------ exit dialog -------------------
+    private val _showExitDialog = MutableStateFlow(false)
+    val showExitDialog = _showExitDialog.asStateFlow()
+
+    fun requestExit() {
+        _showExitDialog.value = true
+    }
+
+    fun dismissExitDialog() {
+        _showExitDialog.value = false
+    }
+    // ---------------------------------------------------------
 }
