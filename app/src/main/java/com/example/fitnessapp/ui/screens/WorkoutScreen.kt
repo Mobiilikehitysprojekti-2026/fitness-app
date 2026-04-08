@@ -2,6 +2,7 @@ package com.example.fitnessapp.ui.screens
 
 import android.Manifest
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +38,7 @@ import androidx.navigation.NavController
 import com.example.fitnessapp.data.model.Coordinates
 import com.example.fitnessapp.data.model.WorkoutType
 import com.example.fitnessapp.ui.components.WorkoutMap
+import com.example.fitnessapp.ui.navigation.BottomNavItem
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import com.example.fitnessapp.viewmodel.WorkoutViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -43,7 +47,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun WalkingWorkoutScreen(
+fun WorkoutScreen(
     navController: NavController,
     workoutViewModel: WorkoutViewModel
 ) {
@@ -114,7 +118,7 @@ fun WalkingWorkoutScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        Text("Walking Workout", fontSize = 26.sp, style = MaterialTheme.typography.headlineMedium)
+        Text(text = "${selectedWorkout.replaceFirstChar { it.uppercase() }} Workout", fontSize = 26.sp, style = MaterialTheme.typography.headlineMedium)
 
         // Map "Window"
         WorkoutMap(
@@ -157,21 +161,23 @@ fun WalkingWorkoutScreen(
         }
 
         // Steps
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        if (selectedWorkout != WorkoutType.CYCLING) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Total Steps", style = MaterialTheme.typography.labelLarge)
-                Text(text = stepCount.toString(), fontSize = 22.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Total Steps", style = MaterialTheme.typography.labelLarge)
+                    Text(text = stepCount.toString(), fontSize = 22.sp)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Steps/min", style = MaterialTheme.typography.labelLarge)
+                    Text(stepsPerMinute.toString(), fontSize = 22.sp)
+                }
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Steps/min", style = MaterialTheme.typography.labelLarge)
-                Text(stepsPerMinute.toString(), fontSize = 22.sp)
-            }
-
         }
+
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -179,7 +185,6 @@ fun WalkingWorkoutScreen(
 
             onClick = {
                 if (!isMoving) {
-                    workoutViewModel.setWorkoutType(WorkoutType.WALKING)
                     workoutViewModel.startWorkout()
                 } else {
                     workoutViewModel.stopWorkout()

@@ -36,13 +36,16 @@ import com.example.fitnessapp.ui.screens.SignupScreen
 import com.example.fitnessapp.ui.screens.WalkingWorkoutScreen
 import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
-import com.example.fitnessapp.ui.screens.WorkoutsScreen
+
 import com.example.fitnessapp.viewmodel.AuthViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
 import com.example.fitnessapp.viewmodel.ThemeViewModel
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitnessapp.ui.screens.WorkoutScreen
+import com.example.fitnessapp.ui.screens.WorkoutsListScreen
+import com.example.fitnessapp.viewmodel.WorkoutViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +79,16 @@ fun AppNavigation(container: AppContainer) {
         )
     }
 
+    // workoutViewModel
+    val workoutViewModel = remember {
+        WorkoutViewModel(
+            container.userAccountRepository,
+            container.workoutSessionRepository,
+            container.locationManager,
+            container.stepCounterManager
+        )
+    }
+
     // workoutDataViewModel
     val workoutDataViewModel = remember {
         WorkoutDataViewModel(
@@ -101,16 +114,14 @@ fun AppNavigation(container: AppContainer) {
         ROUTE_PROFILE                         -> "Profile"
         ROUTE_SETTINGS                        -> "Settings"
         ROUTE_WORKOUT_DATA                    -> "Workout Data"
-        ROUTE_WORKOUTS                        -> "Workouts"
-        ROUTE_RUNNING_WORKOUT                 -> "Running"
-        ROUTE_CYCLING_WORKOUT                 -> "Cycling"
-        ROUTE_WALKING_WORKOUT                 -> "Walking"
+        ROUTE_WORKOUTS_LIST                   -> "Workouts"
+        ROUTE_WORKOUT                         -> workoutViewModel.selectedWorkout.collectAsState().value.replaceFirstChar { it.uppercase() }
         "$ROUTE_WORKOUT_DETAIL/{workoutId}"   -> "Workout Details"
         else                                  -> null
 
     }
 
-    val bottomBarRoutes = setOf(ROUTE_HOME, ROUTE_WORKOUTS, ROUTE_PROFILE, ROUTE_SETTINGS)
+    val bottomBarRoutes = setOf(ROUTE_HOME, ROUTE_WORKOUTS_LIST, ROUTE_PROFILE, ROUTE_SETTINGS)
 
     Scaffold(
 
@@ -163,10 +174,8 @@ fun AppNavigation(container: AppContainer) {
             composable(ROUTE_SETTINGS)         { SettingsScreen(navController) }
             composable(ROUTE_SIGNUP)           { SignupScreen(navController, authViewModel) }
             composable(ROUTE_WORKOUT_DATA)     { WorkoutDataScreen(navController, workoutDataViewModel) }
-            composable(ROUTE_WORKOUTS)         { WorkoutsScreen(navController) }
-            composable(ROUTE_RUNNING_WORKOUT)  { RunningWorkoutScreen(navController, workoutDataViewModel) }
-            composable(ROUTE_CYCLING_WORKOUT)  { CyclingWorkoutScreen(navController, workoutDataViewModel) }
-            composable(ROUTE_WALKING_WORKOUT)  { WalkingWorkoutScreen(navController, workoutDataViewModel) }
+            composable(ROUTE_WORKOUTS_LIST)    { WorkoutsListScreen(navController, workoutViewModel) }
+            composable(ROUTE_WORKOUT)          { WorkoutScreen(navController, workoutViewModel) }
             composable(
                 route = "$ROUTE_WORKOUT_DETAIL/{workoutId}",
                 arguments = listOf(navArgument("workoutId") { type = NavType.StringType })
