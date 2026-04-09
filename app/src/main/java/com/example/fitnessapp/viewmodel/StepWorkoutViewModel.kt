@@ -53,7 +53,7 @@ class StepWorkoutViewModel(
     val cadence: Int
         get() {
             val s = _elapsedSeconds.value
-            return if (s > 0) (stepMgr.stepCount.value.toDouble() / s * 60).toInt() else 0
+            return if (s > 0) (stepManager.stepCount.value.toDouble() / s * 60).toInt() else 0
         }
 
     private var workoutStartTime: Long = 0L
@@ -61,26 +61,26 @@ class StepWorkoutViewModel(
     private var locationJob: Job? = null
 
     fun registerSensors() {
-        stepMgr.startTracking()
+        stepManager.startTracking()
     }
 
     fun unregisterSensors() {
-        stepMgr.stopTracking()
+        stepManager.stopTracking()
     }
 
     // Starts location tracking and updates distanceKm whenever new route points arrive
     fun registerLocation() {
-        locationMgr.startTracking()
+        locationManager.startTracking()
         locationJob = viewModelScope.launch {
-            locationMgr.routePoints.collect {
-                _distanceKm.value = (locationMgr.calculateTotalDistance() / 1000.0)
+            locationManager.routePoints.collect {
+                _distanceKm.value = (locationManager.calculateTotalDistance() / 1000.0)
             }
         }
     }
 
     fun unregisterLocation() {
         locationJob?.cancel()
-        locationMgr.stopTracking()
+        locationManager.stopTracking()
     }
 
     // Starts the 1-second timer and records the workout start time
@@ -121,8 +121,8 @@ class StepWorkoutViewModel(
         stop()
         _elapsedSeconds.value = 0
         _distanceKm.value = 0.0
-        stepMgr.reset()
-        locationMgr.resetRoute()
+        stepManager.reset()
+        locationManager.resetRoute()
     }
 
     // Clean up sensors and location when the ViewModel is destroyed
