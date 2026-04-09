@@ -3,15 +3,24 @@ package com.example.fitnessapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitnessapp.data.repository.UserAccountRepository
+import com.example.fitnessapp.data.repository.WorkoutSessionRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 data class ProfileUiState(
     val height: Float = 175f,
-    val weight: Float = 75f
+    val weight: Float = 75f,
+    val caloriesLast7Days: List<Int> = emptyList(),
+    val averageCalories: Float = 0f
 ) {
     val bmi: Float
         get() {
@@ -29,17 +38,55 @@ data class ProfileUiState(
 }
 
 class ProfileViewModel(
-    private val userAccountRepository: UserAccountRepository
+    private val userAccountRepository: UserAccountRepository,
+    private val workoutSessionRepository: WorkoutSessionRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<ProfileUiState> = userAccountRepository.currentUserAccount
-        .map { user ->
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<ProfileUiState> = combine(
+        userAccountRepository.currentUserAccount,
+        userAccountRepository.currentUserAccount.flatMapLatest { user ->
             if (user != null) {
-                ProfileUiState(height = user.height.toFloat(), weight = user.weight.toFloat())
+                workoutSessionRepository.getAllWorkoutSessionsOfUser(user.id)
             } else {
-                ProfileUiState()
+                flowOf(emptyList())
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
+        }
+    ) { user, sessions ->
+        val height = user?.height?.toFloat() ?: 175f
+        val weight = user?.weight?.toFloat() ?: 75f
+        
+        // Calculate calories for last 7 days
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        val todayStart = calendar.timeInMillis
+        val oneDayMillis = TimeUnit.DAYS.toMillis(1)
+        
+        val dailyCalories = mutableListOf<Int>()
+        for (i in 6 downTo 0) {
+            val dayStart = todayStart - (i * oneDayMillis)
+            val dayEnd = dayStart + oneDayMillis
+            
+            val caloriesForDay = sessions.filter { 
+                it.startTime in dayStart until dayEnd
+            }.sumOf { it.calories }
+            
+            dailyCalories.add(caloriesForDay)
+        }
+        
+        val avg = if (dailyCalories.isNotEmpty()) dailyCalories.average().toFloat() else 0f
+        
+        ProfileUiState(
+            height = height,
+            weight = weight,
+            caloriesLast7Days = dailyCalories,
+            averageCalories = avg
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
 
     fun saveHeight(value: String) {
         value.toFloatOrNull()?.let { height ->

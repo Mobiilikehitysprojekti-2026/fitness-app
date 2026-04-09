@@ -71,7 +71,8 @@ fun AppNavigation(container: AppContainer) {
     // profileViewModel
     val profileViewModel = remember {
         ProfileViewModel(
-            container.userAccountRepository
+            container.userAccountRepository,
+            container.workoutSessionRepository
         )
     }
 
