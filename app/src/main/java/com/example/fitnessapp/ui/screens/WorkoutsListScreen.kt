@@ -14,12 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.fitnessapp.ui.navigation.ROUTE_CYCLING_WORKOUT
-import com.example.fitnessapp.ui.navigation.ROUTE_RUNNING_WORKOUT
-import com.example.fitnessapp.ui.navigation.ROUTE_WALKING_WORKOUT
+import com.example.fitnessapp.data.model.WorkoutType
+import com.example.fitnessapp.ui.navigation.ROUTE_WORKOUT
+import com.example.fitnessapp.viewmodel.WorkoutViewModel
 
+
+/*
+* This screen shows a menu of three workouts (walking, running, cycling)
+* */
 @Composable
-fun WorkoutsScreen(navController: NavController) {
+fun WorkoutsListScreen(
+    navController: NavController,
+    workoutViewModel: WorkoutViewModel
+    ) {
 
     Column(
         modifier = Modifier
@@ -35,10 +42,11 @@ fun WorkoutsScreen(navController: NavController) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-
+        // running
         Button(
-
-            onClick = { navController.navigate(ROUTE_RUNNING_WORKOUT) },
+            onClick = {
+                workoutViewModel.setWorkoutType(WorkoutType.RUNNING)
+                navController.navigate(ROUTE_WORKOUT) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
@@ -47,8 +55,11 @@ fun WorkoutsScreen(navController: NavController) {
             Text("Running", fontSize = 22.sp)
         }
 
+        // cycling
         Button(
-            onClick = { navController.navigate(ROUTE_CYCLING_WORKOUT) },
+            onClick = {
+                workoutViewModel.setWorkoutType(WorkoutType.CYCLING)
+                navController.navigate(ROUTE_WORKOUT) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
@@ -57,9 +68,11 @@ fun WorkoutsScreen(navController: NavController) {
             Text("Cycling", fontSize = 22.sp)
         }
 
+        // walking
         Button(
-
-            onClick = { navController.navigate(ROUTE_WALKING_WORKOUT) },
+            onClick = {
+                workoutViewModel.setWorkoutType(WorkoutType.WALKING)
+                navController.navigate(ROUTE_WORKOUT) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)

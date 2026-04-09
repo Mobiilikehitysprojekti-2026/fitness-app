@@ -30,7 +30,7 @@ data class WorkoutSession(
     val endTime: Long? = null,
     val stepCount: Int = 0,
     val distanceMeters: Float = 0f,
-    val routePoints: List<Coordinates>,    // routePoints is a list of Coordinates (latitude, longitude)
+    val routePoints: List<Coordinates> = emptyList(),    // routePoints is a list of Coordinates (latitude, longitude)
     val pacePerMinute: List<Float> = emptyList(), // pace in min/km for each minute
     val calories: Int = 0,
     val isActive: Boolean = true
