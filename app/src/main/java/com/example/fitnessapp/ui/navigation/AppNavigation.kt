@@ -26,17 +26,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.di.AppContainer
 import androidx.navigation.navArgument
-import com.example.fitnessapp.ui.screens.CyclingWorkoutScreen
 import com.example.fitnessapp.ui.screens.HomeScreen
 import com.example.fitnessapp.ui.screens.LoginScreen
 import com.example.fitnessapp.ui.screens.ProfileScreen
-import com.example.fitnessapp.ui.screens.RunningWorkoutScreen
 import com.example.fitnessapp.ui.screens.SettingsScreen
 import com.example.fitnessapp.ui.screens.SignupScreen
-import com.example.fitnessapp.ui.screens.WalkingWorkoutScreen
 import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
-
 import com.example.fitnessapp.viewmodel.AuthViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
 import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel

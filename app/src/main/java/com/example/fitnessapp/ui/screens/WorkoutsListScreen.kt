@@ -18,6 +18,10 @@ import com.example.fitnessapp.data.model.WorkoutType
 import com.example.fitnessapp.ui.navigation.ROUTE_WORKOUT
 import com.example.fitnessapp.viewmodel.WorkoutViewModel
 
+
+/*
+* This screen shows a menu of three workouts (walking, running, cycling)
+* */
 @Composable
 fun WorkoutsListScreen(
     navController: NavController,
