@@ -61,3 +61,4 @@ class AuthViewModel(
         loginState = LoginState.Idle
     }
 }
+

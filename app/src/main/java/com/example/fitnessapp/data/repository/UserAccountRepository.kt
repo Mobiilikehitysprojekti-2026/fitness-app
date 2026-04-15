@@ -7,6 +7,7 @@ import com.example.fitnessapp.managers.UserPreferencesManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import org.mindrot.jbcrypt.BCrypt
 
 /*
 * UserAccountRepository contains the the current user account data and functions to modify a userAccount.
@@ -24,7 +25,9 @@ class UserAccountRepository(
 
     // insert a userAccount
     suspend fun insertUserAccount(userAccount: UserAccount) {
-        userAccountDao.insertUserAccount(userAccount)
+        val hashedPassword = PasswordHashingObject.hashPassword(userAccount.password)
+
+        userAccountDao.insertUserAccount(userAccount.copy(password = hashedPassword))
     }
 
 
@@ -60,9 +63,10 @@ class UserAccountRepository(
 
     // login
     suspend fun login(username: String, password: String): Boolean {
-        val userAccount = userAccountDao.login(username, password)
+        val userAccount = userAccountDao.getUserAccountByUsername(username)
 
-        return if (userAccount != null) {
+
+        return if (userAccount != null && PasswordHashingObject.checkPassword(password, userAccount.password)) {
             setCurrentUserAccount(userAccount.id)
             true
         } else {
@@ -86,4 +90,17 @@ class UserAccountRepository(
         }
     }
 
+}
+
+// password hasher
+object PasswordHashingObject {
+    // hash the password
+    fun hashPassword(password: String): String {
+        return BCrypt.hashpw(password, BCrypt.gensalt())
+    }
+
+    // check the password
+    fun checkPassword(password: String, hashed: String): Boolean {
+        return BCrypt.checkpw(password, hashed)
+    }
 }
