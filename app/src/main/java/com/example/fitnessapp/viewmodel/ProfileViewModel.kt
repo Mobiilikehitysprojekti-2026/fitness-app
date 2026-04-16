@@ -20,7 +20,8 @@ data class ProfileUiState(
     val height: Float = 175f,
     val weight: Float = 75f,
     val caloriesLast7Days: List<Int> = emptyList(),
-    val averageCalories: Float = 0f
+    val averageCalories: Float = 0f,
+    val hasWorkoutsLast7Days: Boolean = false
 ) {
     val bmi: Float
         get() {
@@ -67,14 +68,21 @@ class ProfileViewModel(
         val oneDayMillis = TimeUnit.DAYS.toMillis(1)
         
         val dailyCalories = mutableListOf<Int>()
+        var anyWorkout = false
+        
         for (i in 6 downTo 0) {
             val dayStart = todayStart - (i * oneDayMillis)
             val dayEnd = dayStart + oneDayMillis
             
-            val caloriesForDay = sessions.filter { 
+            val sessionsInDay = sessions.filter { 
                 it.startTime in dayStart until dayEnd
-            }.sumOf { it.calories }
+            }
             
+            if (sessionsInDay.isNotEmpty()) {
+                anyWorkout = true
+            }
+            
+            val caloriesForDay = sessionsInDay.sumOf { it.calories }
             dailyCalories.add(caloriesForDay)
         }
         
@@ -84,7 +92,8 @@ class ProfileViewModel(
             height = height,
             weight = weight,
             caloriesLast7Days = dailyCalories,
-            averageCalories = avg
+            averageCalories = avg,
+            hasWorkoutsLast7Days = anyWorkout
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
 

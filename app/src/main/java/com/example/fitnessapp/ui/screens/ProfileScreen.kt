@@ -133,6 +133,7 @@ fun ProfileScreen(
                 
                 CaloriesBurntChart(
                     caloriesData = state.caloriesLast7Days,
+                    hasWorkouts = state.hasWorkoutsLast7Days,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

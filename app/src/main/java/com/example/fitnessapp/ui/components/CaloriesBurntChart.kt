@@ -28,6 +28,7 @@ import java.util.Locale
 @Composable
 fun CaloriesBurntChart(
     caloriesData: List<Int>,
+    hasWorkouts: Boolean,
     modifier: Modifier = Modifier
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
@@ -67,7 +68,7 @@ fun CaloriesBurntChart(
             modifier = Modifier.padding(bottom = 8.dp)
         )
         
-        if (caloriesData.isEmpty() || caloriesData.all { it == 0 }) {
+        if (!hasWorkouts) {
             Text(
                 text = "No workout data for the last 7 days.",
                 style = MaterialTheme.typography.bodyMedium,
