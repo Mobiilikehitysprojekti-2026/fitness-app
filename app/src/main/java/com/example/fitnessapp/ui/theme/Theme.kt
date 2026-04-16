@@ -59,12 +59,15 @@ fun FitnessAppTheme(
         else -> LightColorScheme
     }
 
+    // Show the status bar in light theme
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            val insetsController = WindowCompat.getInsetsController(window, view)
+
+            // status bar icons are dark in light theme
+            insetsController.isAppearanceLightStatusBars = !darkTheme
         }
     }
 
