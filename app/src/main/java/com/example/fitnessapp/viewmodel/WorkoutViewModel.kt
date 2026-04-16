@@ -155,7 +155,7 @@ class WorkoutViewModel(
                 stepCount = stepCount.value,
                 distanceMeters = totalDistance.value,
                 routePoints = routePoints.value,
-                pacePerMinute = pacePerMinute.value,
+                pacePerMinute = _pacePerMinute.value,
                 calories = calculateCalories(),
                 endTime = System.currentTimeMillis(),
                 isActive = false
@@ -241,28 +241,29 @@ class WorkoutViewModel(
     private fun startTimer() {
         startTime = System.currentTimeMillis() - (secondsElapsed * 1000)
         distanceAtLastSplit = _totalDistance.value
+        _pacePerMinute.value = emptyList()
 
         timerJob = viewModelScope.launch {
             while (_isMoving.value) {
-                secondsElapsed = (System.currentTimeMillis() - startTime) / 1000
-
-                // pace in a minute
-                if (secondsElapsed > 0 && secondsElapsed % 60 == 0L) {
+                val currentSeconds = (System.currentTimeMillis() - startTime) / 1000
+                
+                // If we crossed a minute boundary
+                if (currentSeconds > secondsElapsed && currentSeconds % 60 == 0L) {
                     val currentTotalDistance = _totalDistance.value
                     val distanceInThisMinute = currentTotalDistance - distanceAtLastSplit
-
                     val distanceKm = distanceInThisMinute / 1000f
 
                     if (distanceKm > 0.001) {
-                        val minutePace = 1.0f / distanceKm
+                        val minutePace = 1.0f / distanceKm // minutes per km
                         _pacePerMinute.update { it + minutePace }
                     } else {
                         _pacePerMinute.update { it + 0f } // No movement
                     }
-
                     distanceAtLastSplit = currentTotalDistance
                 }
-                delay(1000L)
+                
+                secondsElapsed = currentSeconds
+                delay(500L) // More frequent checks to catch the minute boundary exactly
             }
         }
     }
