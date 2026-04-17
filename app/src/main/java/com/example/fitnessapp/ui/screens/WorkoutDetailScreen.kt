@@ -13,11 +13,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.fitnessapp.data.local.entity.WorkoutSession
+import com.example.fitnessapp.data.model.WorkoutType
 import com.example.fitnessapp.ui.components.WorkoutDetailChart
 import com.example.fitnessapp.ui.components.WorkoutMap
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 @Composable
 fun WorkoutDetailScreen(
@@ -72,7 +74,10 @@ fun WorkoutDetailScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        Text(text = "${workout.type} Workout", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "${workout.type.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }} Workout", 
+            style = MaterialTheme.typography.headlineMedium
+        )
         Text(text = dateStr, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         // Map showing the saved route
@@ -95,14 +100,12 @@ fun WorkoutDetailScreen(
                 StatRow(label = "Distance", value = "${"%.2f".format(distanceKm)} km")
                 StatRow(label = "Pace", value = paceStr)
 
-                if (workout.type == "Running" || workout.type == "Walking") {
+                if (workout.type.lowercase() == WorkoutType.RUNNING.lowercase() || 
+                    workout.type.lowercase() == WorkoutType.WALKING.lowercase()) {
                     StatRow(label = "Total Steps", value = workout.stepCount.toString())
                 }
 
-                if (workout.type == "Cycling") {
-                    // Note: WorkoutSession entity doesn't have avgPowerW yet, 
-                    // if it's needed we'd need to add it to the entity.
-                    // For now, I'll omit or use 0 if it was there before.
+                if (workout.type.lowercase() == WorkoutType.CYCLING.lowercase()) {
                     // StatRow(label = "Avg Power", value = "0 W")
                 }
             }
@@ -111,7 +114,8 @@ fun WorkoutDetailScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Pace chart for running/walking workouts
-        if (workout.type == "Running" || workout.type == "Walking") {
+        if (workout.type.lowercase() == WorkoutType.RUNNING.lowercase() || 
+            workout.type.lowercase() == WorkoutType.WALKING.lowercase()) {
             WorkoutDetailChart(
                 paceData = workout.pacePerMinute,
                 modifier = Modifier.fillMaxWidth()
