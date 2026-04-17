@@ -16,6 +16,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -54,6 +55,10 @@ fun WorkoutDetailChart(
         }
     }
 
+    val axisLabelComponent = rememberTextComponent(
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
     Column(modifier = modifier) {
         Text(
             text = "Pace per Minute (min/km)",
@@ -72,10 +77,12 @@ fun WorkoutDetailChart(
                 chart = rememberCartesianChart(
                     rememberLineCartesianLayer(),
                     startAxis = VerticalAxis.rememberStart(
+                        label = axisLabelComponent,
                         valueFormatter = startAxisValueFormatter,
                         itemPlacer = remember { VerticalAxis.ItemPlacer.step() }
                     ),
                     bottomAxis = HorizontalAxis.rememberBottom(
+                        label = axisLabelComponent,
                         valueFormatter = bottomAxisValueFormatter,
                         itemPlacer = remember { HorizontalAxis.ItemPlacer.aligned(spacing = { 1 }) }
                     ),
