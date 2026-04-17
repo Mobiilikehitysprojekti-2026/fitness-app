@@ -68,8 +68,10 @@ fun HomeScreen(
                             java.text.DateFormat.getDateTimeInstance().format(java.util.Date(session.startTime))
                         }
                         Text(text = date)
-                        val durationMin = session.endTime?.let { (it - session.startTime) / 60000 } ?: 0
-                        Text(text = "Duration: $durationMin min")
+                        val durationMillis = session.endTime?.let { it - session.startTime } ?: 0
+                        val minutes = durationMillis / 60000
+                        val seconds = (durationMillis % 60000) / 1000
+                        Text(text = "Duration: ${"%d:%02d".format(minutes, seconds)}")
                         Text(text = "Distance: ${"%.2f".format(session.distanceMeters / 1000f)} km")
                     }
                 }

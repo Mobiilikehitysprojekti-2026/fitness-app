@@ -185,11 +185,20 @@ fun AppNavigation(container: AppContainer) {
             }
         }
 
-        // Handle auto-navigation if user is already logged in
+        // Handle auto-navigation based on user login state
         LaunchedEffect(userAccount) {
-            if (userAccount != null && currentRoute == ROUTE_LOGIN) {
-                navController.navigate(ROUTE_HOME) {
-                    popUpTo(ROUTE_LOGIN) { inclusive = true }
+            if (userAccount != null) {
+                if (currentRoute == ROUTE_LOGIN || currentRoute == ROUTE_SIGNUP) {
+                    navController.navigate(ROUTE_HOME) {
+                        popUpTo(ROUTE_LOGIN) { inclusive = true }
+                        popUpTo(ROUTE_SIGNUP) { inclusive = true }
+                    }
+                }
+            } else {
+                if (currentRoute != ROUTE_LOGIN && currentRoute != ROUTE_SIGNUP) {
+                    navController.navigate(ROUTE_LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             }
         }

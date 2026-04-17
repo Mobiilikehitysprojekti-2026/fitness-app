@@ -112,4 +112,10 @@ class ProfileViewModel(
             }
         }
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            userAccountRepository.logout()
+        }
+    }
 }
