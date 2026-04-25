@@ -3,15 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    // Serialization
     alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.example.fitnessapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.fitnessapp"
