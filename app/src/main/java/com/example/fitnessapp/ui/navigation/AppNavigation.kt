@@ -2,10 +2,7 @@ package com.example.fitnessapp.ui.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LightMode
@@ -32,7 +29,6 @@ import androidx.navigation.navArgument
 import com.example.fitnessapp.ui.screens.HomeScreen
 import com.example.fitnessapp.ui.screens.LoginScreen
 import com.example.fitnessapp.ui.screens.ProfileScreen
-import com.example.fitnessapp.ui.screens.SettingsScreen
 import com.example.fitnessapp.ui.screens.SignupScreen
 import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
@@ -112,7 +108,6 @@ fun AppNavigation(container: AppContainer) {
 
         ROUTE_HOME                            -> "Home"
         ROUTE_PROFILE                         -> "Profile"
-        ROUTE_SETTINGS                        -> "Settings"
         ROUTE_WORKOUT_DATA                    -> "Workout Data"
         ROUTE_WORKOUTS_LIST                   -> "Workouts"
         ROUTE_WORKOUT                         -> workoutViewModel.selectedWorkout.collectAsState().value.replaceFirstChar { it.uppercase() }
@@ -121,7 +116,7 @@ fun AppNavigation(container: AppContainer) {
 
     }
 
-    val bottomBarRoutes = setOf(ROUTE_HOME, ROUTE_WORKOUTS_LIST, ROUTE_PROFILE, ROUTE_SETTINGS)
+    val bottomBarRoutes = setOf(ROUTE_HOME, ROUTE_WORKOUTS_LIST, ROUTE_PROFILE)
 
     Scaffold(
         topBar = {
@@ -171,7 +166,6 @@ fun AppNavigation(container: AppContainer) {
             composable(ROUTE_HOME)             { HomeScreen(navController, workoutDataViewModel) }
             composable(ROUTE_LOGIN)            { LoginScreen(navController, authViewModel) }
             composable(ROUTE_PROFILE)          { ProfileScreen(navController, profileViewModel) }
-            composable(ROUTE_SETTINGS)         { SettingsScreen(navController) }
             composable(ROUTE_SIGNUP)           { SignupScreen(navController, authViewModel) }
             composable(ROUTE_WORKOUT_DATA)     { WorkoutDataScreen(navController, workoutDataViewModel) }
             composable(ROUTE_WORKOUTS_LIST)    { WorkoutsListScreen(navController, workoutViewModel) }
