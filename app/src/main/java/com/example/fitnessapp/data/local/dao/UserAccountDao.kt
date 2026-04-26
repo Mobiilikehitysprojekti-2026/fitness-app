@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.fitnessapp.data.local.entity.UserAccount
 import kotlinx.coroutines.flow.Flow
 
@@ -21,4 +22,6 @@ interface UserAccountDao {
     @Query("SELECT * FROM user_accounts WHERE username = :username LIMIT 1")
     suspend fun getUserAccountByUsername(username: String): UserAccount?
 
+    @Update
+    suspend fun updateUserAccount(user: UserAccount) // update a user
 }
