@@ -176,8 +176,10 @@ fun AppNavigation(container: AppContainer) {
             if (userAccount != null) {
                 if (currentRoute == ROUTE_LOGIN || currentRoute == ROUTE_SIGNUP) {
                     navController.navigate(ROUTE_HOME) {
-                        popUpTo(ROUTE_LOGIN) { inclusive = true }
-                        popUpTo(ROUTE_SIGNUP) { inclusive = true }
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
                     }
                 }
             } else {
