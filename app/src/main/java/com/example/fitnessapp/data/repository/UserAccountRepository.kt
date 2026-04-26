@@ -16,7 +16,7 @@ import org.mindrot.jbcrypt.BCrypt
 class UserAccountRepository(
     private val userAccountDao: UserAccountDao,
     private val userPreferencesManager: UserPreferencesManager
-    ) {
+) {
 
     // currentUserAccount exists across the app
     private val _currentUserAccount = MutableStateFlow<UserAccount?>(null)
@@ -77,7 +77,7 @@ class UserAccountRepository(
     suspend fun updateHeight(height: Int) {
         _currentUserAccount.value?.let { user ->
             val updatedUser = user.copy(height = height)
-            userAccountDao.updateUserAccount(updatedUser)
+            userAccountDao.insertUserAccount(updatedUser)
             _currentUserAccount.value = updatedUser
         }
     }
@@ -85,7 +85,7 @@ class UserAccountRepository(
     suspend fun updateWeight(weight: Int) {
         _currentUserAccount.value?.let { user ->
             val updatedUser = user.copy(weight = weight)
-            userAccountDao.updateUserAccount(updatedUser)
+            userAccountDao.insertUserAccount(updatedUser)
             _currentUserAccount.value = updatedUser
         }
     }

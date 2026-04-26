@@ -25,6 +25,12 @@ class AuthViewModel(
         private set
 
 
+    init {
+        viewModelScope.launch {
+            userAccountRepository.loadSavedUserAccount()
+        }
+    }
+
     // sign up a new user
     fun signUpUser(newUserAccount: UserAccount) {
         viewModelScope.launch {
