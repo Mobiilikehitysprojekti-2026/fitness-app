@@ -34,7 +34,6 @@ import com.example.fitnessapp.ui.screens.WorkoutDataScreen
 import com.example.fitnessapp.ui.screens.WorkoutDetailScreen
 import com.example.fitnessapp.viewmodel.AuthViewModel
 import com.example.fitnessapp.viewmodel.ProfileViewModel
-import com.example.fitnessapp.viewmodel.SampleWorkoutViewModel
 import com.example.fitnessapp.viewmodel.ThemeViewModel
 import com.example.fitnessapp.viewmodel.WorkoutDataViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,14 +51,7 @@ fun AppNavigation(container: AppContainer) {
 
 
     // view models
-    // sampleWorkout viewmodel (for testing)
-    val sampleWorkoutViewModel = remember {
-        SampleWorkoutViewModel(
-            container.userAccountRepository,
-            container.workoutSessionRepository,
-            container.locationManager
-        )
-    }
+
     // authViewModel
     val authViewModel = remember {
         AuthViewModel(
