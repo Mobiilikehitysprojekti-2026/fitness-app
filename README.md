@@ -140,20 +140,17 @@ com.example.fitnessapp
 │   │   ├── converters
 │   │   ├── dao
 │   │   ├── entity
-│   │   └── AppDatabase
+│   │   └── AppDatabase.kt
 │   ├── model
 │   └── repository
 │
 ├── di
-│   └── AppContainer
+│   └── AppContainer.kt
 │
 ├── managers
-│   ├── LocationManager
-│   ├── StepCounterManager
-│   └── UserPreferencesManager
-│
-├── network
-│   └── Network (optional/future)
+│   ├── LocationManager.kt
+│   ├── StepCounterManager.kt
+│   └── UserPreferencesManager.kt
 │
 ├── ui
 │   ├── screens
@@ -161,14 +158,14 @@ com.example.fitnessapp
 │   └── theme
 │
 ├── viewmodel
-│   ├── AuthViewModel
-│   ├── ProfileViewModel
-│   ├── ThemeViewModel
-│   ├── WorkoutDataViewModel
-│   └── WorkoutViewModel
+│   ├── AuthViewModel.kt
+│   ├── ProfileViewModel.kt
+│   ├── ThemeViewModel.kt
+│   ├── WorkoutDataViewModel.kt
+│   └── WorkoutViewModel.kt
 │
-├── FitnessApplication
-└── MainActivity
+├── FitnessApplication.kt
+└── MainActivity.kt
 ```
 
 ---
